@@ -15,7 +15,7 @@ class PrimaryTextButton extends StatelessWidget {
     return TextButton.icon(
       onPressed: onPressed,
       style: (style != null) ? style : TextButton.styleFrom(
-        backgroundColor: theme.colorScheme.onPrimary,
+        backgroundColor: theme.colorScheme.surface,
         foregroundColor: theme.colorScheme.primary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
