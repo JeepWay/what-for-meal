@@ -65,5 +65,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>App 需要您的定位以顯示當前位置</string>
+
 </dict>
 </plist>
