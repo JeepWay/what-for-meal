@@ -31,7 +31,7 @@ class AppState extends ChangeNotifier {
 
   /// Email sign in
   Future<SignInWithEmailResponse> signInWithEmail({
-    required String email, 
+    required String email,
     required String password
   }) async {
     final response = SignInWithEmailResponse(success: false, message: '');
