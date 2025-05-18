@@ -19,6 +19,7 @@ Future<void> showRestaurantDialog(
   final nameCtl = TextEditingController(text: data?['name'] as String? ?? '');
   final addrCtl = TextEditingController(text: data?['address'] as String? ?? '');
   final descCtl = TextEditingController(text: data?['description'] as String? ?? '');
+  String? errorMessage;
 
   await showDialog<void>(
     context: context,
@@ -48,6 +49,15 @@ Future<void> showRestaurantDialog(
 
             TextField(controller: addrCtl, decoration: InputDecoration(labelText: '地址')),
             SizedBox(height: 8),
+            // 地址查詢錯誤時的提示
+            if (errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 0, bottom: 16.0),
+                child: Text(
+                  errorMessage!,
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
             TextField(controller: descCtl, decoration: InputDecoration(labelText: '描述')),
             SizedBox(height: 16),
             // 寫 filter 的下拉選單
@@ -57,23 +67,28 @@ Future<void> showRestaurantDialog(
       actions: [
         DialogActionButtons(
           onConfirm: () async {
-            final result = await convertAddressToGeohash(addrCtl.text.trim());
-            final restaurantData = {
-              'name': nameCtl.text.trim(),
-              'address': addrCtl.text.trim(),
-              'description': descCtl.text.trim(),
-              'lat': result['latitude'],
-              'lon': result['longitude'],
-              'geohash': result['geohash'],
-            };
+            try {
+              final result = await convertAddressToGeohash(addrCtl.text.trim());
+              final restaurantData = {
+                'name': nameCtl.text.trim(),
+                'address': addrCtl.text.trim(),
+                'description': descCtl.text.trim(),
+                'lat': result['latitude'],
+                'lon': result['longitude'],
+                'geohash': result['geohash'],
+              };
 
-            if(isEdit){
-              await service.updateRestaurant(listID, doc.id, restaurantData);
-              Navigator.of(context).pop();
-            }
-            else {
-              await service.addRestaurant(listID, restaurantData);
-              Navigator.of(context).pop();
+              if(isEdit){
+                await service.updateRestaurant(listID, doc.id, restaurantData);
+                Navigator.of(context).pop();
+              }
+              else {
+                await service.addRestaurant(listID, restaurantData);
+                Navigator.of(context).pop();
+              }
+            } catch (e) {
+              errorMessage = '地址查詢失敗：請輸入正確的地址';
+              (context as Element).markNeedsBuild();
             }
           }
         )
