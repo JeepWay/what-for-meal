@@ -114,4 +114,17 @@ class FirebaseService {
     docs.shuffle(Random());
     return docs.take(100).toList();
   }
+
+  Future<Map<String, dynamic>?> watchMyInfo() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userID)
+        .get();
+
+    if (doc.exists) {
+      return doc.data();
+    } else {
+      return null;
+    }
+  }
 }

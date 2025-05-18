@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:what_for_meal/main.dart';
+import 'package:what_for_meal/pages/account_info_display.dart';
 
 import '../states/app_state.dart';
 import '../firebase/firebase_service.dart';
@@ -98,7 +99,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       return Center(child: Text('${_titles[_selectedIndex]}頁面'));
     }
     else {
-      return Center(child: Text('${_titles[_selectedIndex]}頁面'));
+      return AccountInfoPage();
     }
   }
   
