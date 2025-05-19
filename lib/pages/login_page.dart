@@ -180,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      PrimaryTextButton(
+                      TransparentTextButton(
                         onPressed: () {
                           showDialog(
                             context: context,
@@ -210,11 +210,11 @@ class _LoginPageState extends State<LoginPage> {
                   // 登入按鈕
                   SizedBox(
                     height: 56,
-                    child: PrimaryElevatedButton(
+                    child: PrimaryOutlinedButton(
                       onPressed: _isLoading ? null : _signInWithEmail,
                       label: _isLoading
                           ? CircularProgressIndicator(color: theme.colorScheme.onPrimary)
-                          : Text('登入'),
+                          : const Text('登入'),
                     ),
                   ),
                   
@@ -230,7 +230,7 @@ class _LoginPageState extends State<LoginPage> {
                           color: theme.colorScheme.onSurface,
                         ),
                       ),
-                      PrimaryTextButton(
+                      TransparentTextButton(
                         onPressed: () => context.go('/register'),
                         label: const Text('註冊'),
                       ),
@@ -247,7 +247,7 @@ class _LoginPageState extends State<LoginPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
                           '以其他帳號登入',
-                          style: theme.textTheme.titleMedium!.copyWith(
+                          style: theme.textTheme.titleSmall!.copyWith(
                             color: theme.colorScheme.onSurface,
                           ),
                         ),
@@ -260,7 +260,7 @@ class _LoginPageState extends State<LoginPage> {
                   
                   SizedBox(
                     height: 56,
-                    child: WhiteElevatedButton(
+                    child: WhiteOutlinedButton(
                       onPressed: _isLoading ? null : _signInWithGoogle,
                       icon: Image.asset("assets/google-icon.png"),
                       label: _isLoading

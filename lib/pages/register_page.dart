@@ -265,7 +265,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: theme.colorScheme.onSurface,
                         ),
                       ),
-                      PrimaryTextButton(
+                      TransparentTextButton(
                         onPressed: () => context.go('/login'),
                         label: const Text('登入'),
                       ),
