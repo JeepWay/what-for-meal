@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'firebase/firebase_setup.dart';
 import 'states/app_state.dart';
 import 'routes/app_routes.dart';
 import 'themes/theme.dart';
+import 'firebase/firebase_service.dart';
+import 'logging/logging.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FirebaseService().initializeFirebase();
+  try {
+    await FirebaseService.initializeFirebase();
+    logger.i('Firebase initialization success!');
+  } catch (e) {
+    logger.e('Firebase initialization failed: $e');
+    return;
+  }
+  final appState = AppState();
+  await appState.initAsync();
   runApp(
     ChangeNotifierProvider(
-      create: (context) => AppState(),
+      create: (context) => appState,
       builder: ((context, child) => const App()),
     )
   );

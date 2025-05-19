@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'
     hide EmailAuthProvider, PhoneAuthProvider;
-// import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -16,12 +15,10 @@ class AppState extends ChangeNotifier {
   bool get loggedIn => (_user != null);
 
   AppState() {
-    logger.i('Starting AppState init');
-    init();
+    logger.i('Creating AppState object, call _initAsync() after create it !!');
   }
-  
-  Future<void> init() async {
-    logger.i('Starting init()');
+
+  Future<void> initAsync() async {   
     _user = FirebaseAuth.instance.currentUser;
     notifyListeners();
 
