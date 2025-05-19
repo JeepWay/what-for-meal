@@ -1,7 +1,6 @@
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import '../states/app_state.dart';
 import '../pages/home_page.dart';
 import '../pages/login_page.dart';
 import '../pages/register_page.dart';
@@ -13,8 +12,7 @@ final GoRouter _router = GoRouter(
   initialLocation: '/home',
   debugLogDiagnostics: true,
   redirect: (context, state) {
-    final appState = Provider.of<AppState>(context, listen: false);
-    bool isLoggedIn = appState.loggedIn;
+    bool isLoggedIn = (FirebaseAuth.instance.currentUser != null);
     logger.t('isLoggedIn: $isLoggedIn');
     if (!isLoggedIn && state.uri.toString() == '/home') {
       return '/login';
