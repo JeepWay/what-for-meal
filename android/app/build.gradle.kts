@@ -7,8 +7,9 @@ plugins {
 
 android {
     namespace = "com.example.what_for_meal"
-    compileSdk = flutter.compileSdkVersion
+    // compileSdk = flutter.compileSdkVersion
     // ndkVersion = flutter.ndkVersion
+    compileSdk = 35
     ndkVersion = "27.0.12077973"
 
     compileOptions {
