@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../states/app_state.dart';
-import '../states/response.dart';
 import '../widgets/widgets.dart';
+import '../firebase/firebase_service.dart';
 
 class ResetPasswordDialog extends StatefulWidget {
   const ResetPasswordDialog({super.key});
@@ -26,9 +24,7 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
       return;
     }
 
-    final appState = Provider.of<AppState>(context, listen: false);
-
-    ResetPasswordWithEmailResponse response = await appState.resetPasswordWithEmail(
+    final response = await FirebaseService.resetPasswordWithEmail(
       email: _resetEmailController.text.trim(),
     );
 

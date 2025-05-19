@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
-import '../states/app_state.dart';
-import '../states/response.dart';
 import '../widgets/widgets.dart';
+import '../firebase/firebase_service.dart';
 import 'reset_passward.dart';
 
 class LoginPage extends StatefulWidget {
@@ -40,15 +38,19 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
-    final appState = Provider.of<AppState>(context, listen: false);
-
-    SignInWithEmailResponse response = await appState.signInWithEmail(
+    final response = await FirebaseService.signInWithEmail(
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
     );
 
     if (response.success) {
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message),
+            duration: Duration(seconds: 2),
+          ),
+        );
         context.go('/home');
       }
     } else {
@@ -68,12 +70,16 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
-    final appState = Provider.of<AppState>(context, listen: false);
-
-    SignInWithGoogleResponse response = await appState.signInWithGoogle();
+    final response = await FirebaseService.signInWithGoogle();
 
     if (response.success) {
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message),
+            duration: Duration(seconds: 2),
+          ),
+        );
         context.go('/home');
       }
     } else {
