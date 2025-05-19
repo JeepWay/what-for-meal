@@ -16,17 +16,28 @@ class AppState extends ChangeNotifier {
   bool get loggedIn => (_user != null);
 
   AppState() {
+    logger.i('Starting AppState init');
     init();
   }
   
   Future<void> init() async {
+    logger.i('Starting init()');
     _user = FirebaseAuth.instance.currentUser;
     notifyListeners();
 
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      _user = user;
-      notifyListeners();
-    });
+    try {
+      FirebaseAuth.instance.authStateChanges().listen((User? user) {
+        if (user != null) {
+          logger.i('User changed: ${user.uid}');
+        } else {
+          logger.i('User changed: No user');
+        }
+        _user = user;
+        notifyListeners();
+      });
+    } catch (e) {
+      logger.w('Add authStateChanges subscription failed: $e');
+    }
   }
 
   /// Email sign in
