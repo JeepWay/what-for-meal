@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../widgets/widgets.dart';
+import '../widgets/dialog.dart';
 import '../firebase/firebase_service.dart';
-import 'reset_passward.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
