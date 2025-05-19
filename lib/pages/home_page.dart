@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'main_page.dart';
@@ -14,7 +15,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage>{
-  int _selectedIndex = 0;
 
   final List<Widget> _pages = [
     MainPage(),
@@ -23,21 +23,11 @@ class _HomePageState extends State<HomePage>{
     ProfilePage(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
         backgroundColor: theme.colorScheme.secondary,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -61,17 +51,20 @@ class _HomePageState extends State<HomePage>{
             label: '帳戶資訊',
           ),
         ],
-        iconSize: 28.0,
-        currentIndex: _selectedIndex,
-        selectedFontSize: 16,
-        unselectedFontSize: 14,
-        selectedItemColor: theme.colorScheme.primary,
-        unselectedItemColor: theme.colorScheme.onSecondary,
-        type: BottomNavigationBarType.fixed,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        onTap: _onItemTapped,
-      ),
+        iconSize: 35,
+        height: 60,
+        currentIndex: 0,
+        activeColor: theme.colorScheme.primary,
+        inactiveColor: theme.colorScheme.onSecondary,
+      ), 
+      tabBuilder: (context, index) {
+        return CupertinoTabView(
+          builder: (context){
+            return CupertinoPageScaffold(
+              child: _pages[index]);
+          },
+        );
+      },
     );
   }
 }
