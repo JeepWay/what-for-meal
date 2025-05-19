@@ -5,53 +5,101 @@ class AppTheme {
   // static final ThemeData darkTheme = _darkTheme;
 }
 
-final _lightColorScheme = ColorScheme.fromSeed(
+final ColorScheme _lightColorScheme = ColorScheme.fromSeed(
   seedColor: Colors.amber.shade600,
   brightness: Brightness.light,
-  primary: Colors.amber.shade600, // 主題色：橙色 (0xFFFF9800)
-  onPrimary: Colors.white, // 主題色上的文字/圖標：白色
-  secondary: Colors.grey.shade200, // 次要色：番茄紅
-  onSecondary: Colors.white, // 次要色上的文字/圖標：白色
-  error: Colors.red.shade800, // 錯誤色：柔和紅色
-  onError: Colors.white, // 錯誤色上的文字/圖標：白色
-  surface: Colors.grey.shade50, // 表面色（如卡片）：淺橙米色
-  onSurface: Colors.black87, // 表面上的文字/圖標：深灰色
+  primary: Colors.amber.shade600, 
+  onPrimary: Colors.white,
+  primaryContainer: Colors.amber.shade200, 
+  onPrimaryContainer: Colors.black87, 
+  secondary: Colors.grey.shade200, 
+  onSecondary: Colors.black87,
+  error: Colors.red.shade800, 
+  onError: Colors.white, 
+  surface: Colors.grey.shade50,
+  onSurface: Colors.black87, 
+  outline: Colors.grey.shade300,
 );
 
 
 ThemeData _lightTheme = ThemeData(
   primarySwatch: Colors.orange,
-  colorScheme: _lightColorScheme,
   useMaterial3: true,
+  colorScheme: _lightColorScheme,
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
-    fillColor: Colors.grey.shade200,
+    fillColor: _lightColorScheme.secondary,
     contentPadding: const EdgeInsets.symmetric(
       horizontal: 20,
       vertical: 16,
     ),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
+    border: OutlineInputBorder( // 基礎邊框，作為預設值應用於所有狀態（除非其他狀態邊框被指定）
+      borderRadius: BorderRadius.circular(14),
       borderSide: BorderSide.none,
     ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: Colors.grey[300]!),
+    enabledBorder: OutlineInputBorder(  // 當輸入框處於啟用但未聚焦狀態時的邊框
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: _lightColorScheme.outline),
     ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Colors.orange, width: 2),
+    focusedBorder: OutlineInputBorder(  // 當輸入框獲得焦點（用戶點擊或正在輸入時）的邊框
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: Colors.orange, width: 2),
+    ),
+    errorBorder: OutlineInputBorder(  // 當輸入框有錯誤（例如驗證失敗）且未聚焦時的邊框
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: _lightColorScheme.error),
+    ),
+    focusedErrorBorder: OutlineInputBorder( // 當輸入框有錯誤且處於聚焦狀態時的邊框
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: _lightColorScheme.error),
+    ),
+  ),
+  buttonTheme: ButtonThemeData(
+    padding: const EdgeInsets.symmetric(vertical: 14),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
+  ),
+  textButtonTheme: TextButtonThemeData(
+    style: OutlinedButton.styleFrom(
+      foregroundColor: _lightColorScheme.onPrimary,
+      backgroundColor: _lightColorScheme.primary,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      side: BorderSide(color: _lightColorScheme.outline),
+      shadowColor: null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      iconColor: _lightColorScheme.onPrimary,
+      iconSize: 25,
     ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      foregroundColor: Colors.white,
-      backgroundColor: Colors.orange,
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      foregroundColor: _lightColorScheme.onPrimary,
+      backgroundColor: _lightColorScheme.primary,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      side: BorderSide(color: _lightColorScheme.outline),
+      shadowColor: _lightColorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      side: BorderSide(color: Colors.orange.shade300),
+      iconColor: _lightColorScheme.onPrimary,
+      iconSize: 25,
+    ), 
+  ),
+  outlinedButtonTheme: OutlinedButtonThemeData(
+    style: OutlinedButton.styleFrom(
+      foregroundColor: _lightColorScheme.onPrimary,
+      backgroundColor: _lightColorScheme.primary,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      side: BorderSide(color: _lightColorScheme.outline),
+      shadowColor: null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      iconColor: _lightColorScheme.onPrimary,
+      iconSize: 25,
     ),
   ),
   textTheme: Typography.material2021().black.copyWith(
@@ -82,7 +130,7 @@ ThemeData _lightTheme = ThemeData(
     bodySmall: const TextStyle(
       color: Colors.black54,
     ),
-    labelLarge: const TextStyle(  // 用於按鈕文字
+    labelLarge: const TextStyle(
       color: Colors.black54, 
     ),
     labelMedium: const TextStyle(
@@ -113,15 +161,15 @@ ThemeData _lightTheme = ThemeData(
 //         vertical: 16,
 //       ),
 //       border: OutlineInputBorder(
-//         borderRadius: BorderRadius.circular(12),
+//         borderRadius: BorderRadius.circular(14),
 //         borderSide: BorderSide.none,
 //       ),
 //       enabledBorder: OutlineInputBorder(
-//         borderRadius: BorderRadius.circular(12),
+//         borderRadius: BorderRadius.circular(14),
 //         borderSide: BorderSide(color: Colors.grey[700]!),
 //       ),
 //       focusedBorder: OutlineInputBorder(
-//         borderRadius: BorderRadius.circular(12),
+//         borderRadius: BorderRadius.circular(14),
 //         borderSide: const BorderSide(color: Colors.orange, width: 2),
 //       ),
 //     ),
