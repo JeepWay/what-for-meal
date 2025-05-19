@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../firebase/firebase_service.dart';
+import 'main_page.dart';
+import 'explore_page.dart';
+import 'event_page.dart';
+import 'profile_page.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,89 +13,52 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _count = 0;
-  int get count => _count;
+class _HomePageState extends State<HomePage>{
   int _selectedIndex = 0;
-  final List<Widget> _widgetOptions = <Widget>[
-    Text('Index 0: 主頁'), 
-    Text('Index 1: 新增清單'),
-    Text('Index 2: 探索'),
+
+  final List<Widget> _pages = [
+    MainPage(),
+    ExplorePage(),
+    EventPage(),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    // TODO: Implement navigation logic here
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-          onPressed: () {  },
-        ),
-        title: const Text('我的主頁'),
-        centerTitle: true,
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.add_alert),
-            tooltip: 'Show Snackbar',
-            onPressed: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('This is a snackbar')));
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Log out',
-            onPressed: () async {
-              await FirebaseService.signOut();
-              if (context.mounted) context.go('/login');
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            _count++;
-          });
-        },
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
-        tooltip: 'Increment Counter',
-        child: const Icon(Icons.add, size: 35),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: theme.colorScheme.secondary,
-        items: <BottomNavigationBarItem>[
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
-            label: '主頁',
             activeIcon: Icon(Icons.home_rounded),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_box_outlined),
-            label: '新增清單',
-            activeIcon: Icon(Icons.add_box_rounded),
+            label: '主頁',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.explore_outlined),
-            label: '探索',
             activeIcon: Icon(Icons.explore_rounded),
+            label: '探索',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people_outline),
+            activeIcon: Icon(Icons.people_rounded),
+            label: '以食會友',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.manage_accounts_outlined),
+            activeIcon: Icon(Icons.manage_accounts_rounded),
+            label: '帳戶資訊',
           ),
         ],
         iconSize: 28.0,
@@ -100,6 +66,7 @@ class _HomePageState extends State<HomePage> {
         selectedFontSize: 16,
         unselectedFontSize: 14,
         selectedItemColor: theme.colorScheme.primary,
+        unselectedItemColor: theme.colorScheme.onSecondary,
         type: BottomNavigationBarType.fixed,
         showSelectedLabels: true,
         showUnselectedLabels: true,

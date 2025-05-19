@@ -196,5 +196,43 @@ class FirebaseService {
     }
     return response;
   }
+
+  /// 主頁新增個人清單
+  static Future<AddPersonalListResponse> addNewList({
+    required String title
+  }) async {
+    final response = AddPersonalListResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法新增清單';
+      return response;
+    }
+
+    try {
+      DocumentReference doc = await FirebaseFirestore.instance
+        .collection(CollectionNames.personalLists)
+        .add({
+          PersonalListFields.title: title,
+          PersonalListFields.userID: user.uid,
+          PersonalListFields.userName: user.displayName,
+          PersonalListFields.isPublic: false,
+          PersonalListFields.creatTime: FieldValue.serverTimestamp(),
+          PersonalListFields.updateTime: FieldValue.serverTimestamp(),
+        });
+      logger.i('Add personal list successfully: $doc');
+      response.success = true;
+      response.message = '成功新增新的清單: $title';
+      response.doc = doc;
+    } on FirebaseException catch (e) {
+      logger.w('Add personal list failed.\nFirestore error: $e');
+      response.message = '無法新增個人清單';
+    }
+    catch (e) {
+      logger.w('Add personal list failed.\nUnknown error: $e');
+      response.message = '未知錯誤: $e';
+    }
+    return response;
+  }
 }
 
