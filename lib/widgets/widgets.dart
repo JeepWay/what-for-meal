@@ -1,7 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import '../firebase/firebase_service.dart';
 
 class TransparentTextButton extends StatelessWidget {
   const TransparentTextButton({super.key, this.icon, required this.label, required this.onPressed, this.style});

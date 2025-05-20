@@ -5,8 +5,6 @@ import '../pages/home_page.dart';
 import '../pages/login_page.dart';
 import '../pages/register_page.dart';
 import '../logging/logging.dart';
-import '../pages/personal_list_display.dart';
-import '../pages/shared_list_diplay.dart';
 
 GoRouter get router => _router;
 
@@ -36,22 +34,6 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterPage(),
-    ),
-    GoRoute(
-      path: '/list/:listID/:listTitle',
-      name: 'list',
-      builder: (context, state) => ListPage(
-        listID: state.pathParameters['listID']!,
-        listTitle: state.pathParameters['listTitle']!,
-      ),
-    ),
-    GoRoute(
-      path: '/sharedList/:listID/:listTitle',
-      name: 'sharedList',
-      builder: (context, state) => SharedListPage(
-        listID: state.pathParameters['listID']!,
-        listTitle: state.pathParameters['listTitle']!,
-      ),
     ),
   ],
 );
