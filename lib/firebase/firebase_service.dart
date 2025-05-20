@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import '../logging/logging.dart';
+import '../utils/geolocation_utils.dart';
 import 'firebase_options.dart';
 import 'response.dart';
 import 'constants.dart';
@@ -234,5 +235,196 @@ class FirebaseService {
     }
     return response;
   }
+
+  /// 主頁刪除個人清單
+  static Future<DeletePersonalListResponse> deleteList({
+    required String listID
+  }) async {
+    final response = DeletePersonalListResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法刪除清單';
+      return response;
+    }
+
+    try {
+      final firestore = FirebaseFirestore.instance;
+      WriteBatch batch = firestore.batch();
+      final listRef = firestore.collection(CollectionNames.personalLists).doc(listID);
+
+      final listSnapshot = await listRef.get();
+      if (!listSnapshot.exists) {
+        logger.w('Personal list does not exist: $listID');
+        response.message = '無法刪除個人清單，該清單並未存在: $listID';
+        return response;
+      }
+
+      final restaurantSnapshot = await listRef.collection(CollectionNames.restaurants).get();
+      for (final doc in restaurantSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      batch.delete(listRef);
+      await batch.commit();
+
+      logger.i('Remove personal list successfully: $listID');
+      response.success = true;
+      response.message = '成功刪除個人清單';
+    } on FirebaseException catch (e) {
+      logger.w('Remove personal list failed.\nFirestore error: $e');
+      response.message = '無法刪除個人清單: ${e.message}';
+    } catch (e) {
+      logger.w('Remove personal list failed.\nUnknown error: $e');
+      response.message = '未知錯誤: $e';
+    }
+    return response;
+  }
+
+  /// 更新清單的屬性
+  static Future<PpdateIsPublicOfListResponse> updateList({
+    required String listID,
+    required Map<String, dynamic> updates,
+  }) async {
+    final response = PpdateIsPublicOfListResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法更新清單';
+      return response;
+    }
+
+    try {
+      final listRef = FirebaseFirestore.instance
+          .collection(CollectionNames.personalLists)
+          .doc(listID);
+
+      final listSnapshot = await listRef.get();
+      if (!listSnapshot.exists) {
+        logger.w('Personal list does not exist: $listID');
+        response.message = '更新清單失敗，該清單並未存在: $listID';
+        return response;
+      }
+
+      final updatedData = {
+        ...updates,
+        PersonalListFields.updateTime: FieldValue.serverTimestamp(),
+      };
+      await listRef.update(updatedData);
+
+      logger.i('Update personal list: $listID with field: ${updatedData.toString()} successfully');
+      response.success = true;
+      response.message = '成功更新個人清單: $listID';
+    } on FirebaseException catch (e) {
+      logger.w('Update personal list failed.\nFirestore error: $e');
+      response.message = '無法更新個人清單';
+    }
+    catch (e) {
+      logger.w('Update personal list failed.\nUnknown error: $e');
+      response.message = '未知錯誤: $e';
+    }
+    return response;
+  }
+
+  /// 個人清單裡新增餐廳
+  static Future<AddRestaurantResponse> addNewRestaurant({
+    required String listID,
+    required String name,
+    required String address,
+    required String description,
+    required String type,
+    required String price,
+    required bool hasAC,
+  }) async {
+    final response = AddRestaurantResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法新增餐廳';
+      return response;
+    }
+  
+    try {
+      final geoResult = await convertAddressToGeohash(address.trim());
+
+      DocumentReference doc = await FirebaseFirestore.instance
+        .collection(CollectionNames.personalLists)
+        .doc(listID)
+        .collection(CollectionNames.restaurants)
+        .add({
+          RestaurantFields.name: name.trim(),
+          RestaurantFields.description: description.trim(),
+          RestaurantFields.address: address.trim(),
+          RestaurantFields.geoHash: geoResult['geohash'],
+          RestaurantFields.location: GeoPoint(geoResult['latitude'], geoResult['longitude']),
+          RestaurantFields.type: type.trim(),
+          RestaurantFields.price: price.trim(),
+          RestaurantFields.hasAC: hasAC,
+          RestaurantFields.creatTime: FieldValue.serverTimestamp(),
+          RestaurantFields.updateTime: FieldValue.serverTimestamp(),
+        });
+      
+      logger.i('Add restaurantt successfully: $doc');
+      response.success = true;
+      response.message = '成功新增新的餐廳: $name';
+      response.doc = doc;
+    } on Exception catch (e) {
+      logger.w('Add restaurantt failed.\nLocation error $e');
+      response.message = '地址查詢失敗：請輸入正確的地址';
+    } catch (e) {
+      logger.w('Add restaurantt failed.\nUnknown error $e');
+      response.message = '無法新增餐廳，未知錯誤: $e';
+    }
+    return response;
+  }
+
+  /// 個人清單裡刪除餐廳
+  static Future<DeleteRestaurantResponse> deleteRestaurant({
+    required String listID,
+    required String restaurantID,
+  }) async {
+    final response = DeleteRestaurantResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法刪除餐廳';
+      return response;
+    }
+
+    try {
+      final firestore = FirebaseFirestore.instance;
+      WriteBatch batch = firestore.batch();
+      final listRef = firestore.collection(CollectionNames.personalLists).doc(listID);
+      final restaurantRef = listRef.collection(CollectionNames.restaurants).doc(restaurantID);
+
+      final listSnapshot = await listRef.get();
+      if (!listSnapshot.exists) {
+        logger.w('Personal list does not exist: $listID');
+        response.message = '刪除餐廳失敗，該清單並未存在: $listID';
+        return response;
+      }
+
+      final restaurantSnapshot = await restaurantRef.get();
+      if (!restaurantSnapshot.exists) {
+        logger.w('Restaurant does not exist: $restaurantID in list: $listID');
+        response.message = '刪除餐廳失敗，該餐廳並未存在: $restaurantID';
+        return response;
+      }
+
+      batch.delete(restaurantRef);
+      await batch.commit();
+
+      logger.i('Remove restaurant successfully: $restaurantID from list: $listID');
+      response.success = true;
+      response.message = '成功刪除餐廳';
+    } on FirebaseException catch (e) {
+      logger.w('Remove restaurant failed.\nFirestore error: $e');
+      response.message = '無法刪除餐廳: ${e.message}';
+    } catch (e) {
+      logger.w('Remove restaurant failed.\nUnknown error: $e');
+      response.message = '未知錯誤: $e';
+    }
+    return response;
+  }
+  
 }
 

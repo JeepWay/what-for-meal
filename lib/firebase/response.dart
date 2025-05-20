@@ -48,10 +48,32 @@ class AddPersonalListResponse {
   DocumentReference? doc;
 }
 
+class DeletePersonalListResponse {
+  DeletePersonalListResponse({required this.success, required this.message});
+
+  bool success;
+  String message;
+}
+
+class PpdateIsPublicOfListResponse {
+  PpdateIsPublicOfListResponse({required this.success, required this.message});
+
+  bool success;
+  String message;
+}
+
+
 class AddRestaurantResponse {
   AddRestaurantResponse({required this.success, required this.message});
 
   bool success;
   String message;
   DocumentReference? doc;
+}
+
+class DeleteRestaurantResponse {
+  DeleteRestaurantResponse({required this.success, required this.message});
+
+  bool success;
+  String message;
 }
