@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
-import '../states/app_state.dart';
-import '../states/response.dart';
 import '../widgets/widgets.dart';
+import '../firebase/firebase_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -49,9 +47,7 @@ class _RegisterPageState extends State<RegisterPage> {
       _errorMessage = '';
     });
 
-    final appState = Provider.of<AppState>(context, listen: false);
-
-    SignUpWithEmailResponse response = await appState.signUpWithEmail(
+    final response = await FirebaseService.signUpWithEmail(
       username: _usernameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
@@ -59,6 +55,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (response.success) {
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message),
+            duration: Duration(seconds: 2),
+          ),
+        );
         context.go('/home');
       }
     } else {
@@ -265,7 +267,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: theme.colorScheme.onSurface,
                         ),
                       ),
-                      PrimaryTextButton(
+                      TransparentTextButton(
                         onPressed: () => context.go('/login'),
                         label: const Text('登入'),
                       ),

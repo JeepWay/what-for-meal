@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
-import '../states/app_state.dart';
-import '../states/response.dart';
 import '../widgets/widgets.dart';
-import 'reset_passward.dart';
+import '../widgets/dialog.dart';
+import '../firebase/firebase_service.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -40,15 +39,19 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
-    final appState = Provider.of<AppState>(context, listen: false);
-
-    SignInWithEmailResponse response = await appState.signInWithEmail(
+    final response = await FirebaseService.signInWithEmail(
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
     );
 
     if (response.success) {
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message),
+            duration: Duration(seconds: 2),
+          ),
+        );
         context.go('/home');
       }
     } else {
@@ -68,12 +71,16 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
-    final appState = Provider.of<AppState>(context, listen: false);
-
-    SignInWithGoogleResponse response = await appState.signInWithGoogle();
+    final response = await FirebaseService.signInWithGoogle();
 
     if (response.success) {
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message),
+            duration: Duration(seconds: 2),
+          ),
+        );
         context.go('/home');
       }
     } else {
@@ -180,7 +187,7 @@ class _LoginPageState extends State<LoginPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      PrimaryTextButton(
+                      TransparentTextButton(
                         onPressed: () {
                           showDialog(
                             context: context,
@@ -210,11 +217,11 @@ class _LoginPageState extends State<LoginPage> {
                   // 登入按鈕
                   SizedBox(
                     height: 56,
-                    child: PrimaryElevatedButton(
+                    child: PrimaryOutlinedButton(
                       onPressed: _isLoading ? null : _signInWithEmail,
                       label: _isLoading
                           ? CircularProgressIndicator(color: theme.colorScheme.onPrimary)
-                          : Text('登入'),
+                          : const Text('登入'),
                     ),
                   ),
                   
@@ -230,7 +237,7 @@ class _LoginPageState extends State<LoginPage> {
                           color: theme.colorScheme.onSurface,
                         ),
                       ),
-                      PrimaryTextButton(
+                      TransparentTextButton(
                         onPressed: () => context.go('/register'),
                         label: const Text('註冊'),
                       ),
@@ -247,7 +254,7 @@ class _LoginPageState extends State<LoginPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
                           '以其他帳號登入',
-                          style: theme.textTheme.titleMedium!.copyWith(
+                          style: theme.textTheme.titleSmall!.copyWith(
                             color: theme.colorScheme.onSurface,
                           ),
                         ),
@@ -260,7 +267,7 @@ class _LoginPageState extends State<LoginPage> {
                   
                   SizedBox(
                     height: 56,
-                    child: WhiteElevatedButton(
+                    child: WhiteOutlinedButton(
                       onPressed: _isLoading ? null : _signInWithGoogle,
                       icon: Image.asset("assets/google-icon.png"),
                       label: _isLoading
