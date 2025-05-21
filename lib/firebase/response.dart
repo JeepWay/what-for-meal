@@ -77,3 +77,11 @@ class DeleteRestaurantResponse {
   bool success;
   String message;
 }
+
+class ExploreResponse {
+  ExploreResponse({required this.success, required this.message, required this.restaurants,});
+
+  bool success;
+  String message;
+  List<Map<String, dynamic>> restaurants;
+}

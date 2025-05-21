@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:what_for_meal/logging/logging.dart';
 import 'package:what_for_meal/utils/geolocation_utils.dart';
 import '../states/app_state.dart';
 import '../firebase/firebase_service.dart';
@@ -25,8 +26,9 @@ class _ExplorePageState extends State<ExplorePage> {
     super.initState();
     _posFuture = determinePosition();
   }
-
-  Map<String, List<Map<String, dynamic>>> randomRecommend(List<Map<String, dynamic>> restaurants) {
+  
+  /// 隨機選擇餐廳
+  Map<String, List<Map<String, dynamic>>> _randomRecommend(List<Map<String, dynamic>> restaurants) {
     // 依 category 分組
     final Map<String, List<Map<String, dynamic>>> byCategory = {};
     for (var r in restaurants) {
@@ -50,37 +52,35 @@ class _ExplorePageState extends State<ExplorePage> {
   }
 
   Future<Widget> buildExploreResults(
-      BuildContext context,
-      String uid,
-      GeoPoint center,
-      FirebaseService service,
+    BuildContext context,
+    GeoPoint center,
   ) async {
     int searchRadius = 500;
 
     while (true) {
-      final userIds = await service.fetchNearbyUserIds(uid, center, searchRadius, precision: 5);
-      print(userIds);
-      final restaurants = userIds.isNotEmpty
-                          ? (await service.collectRestaurantsFromUsers(userIds))
-                              .map((e) => Map<String, dynamic>.from(e)) // key 強制轉型成 String
-                              .toList()
-                          : <Map<String, dynamic>>[];
+      final exploreRes = await FirebaseService.fetchNearbyUserRestaurants(center, searchRadius, precision: 5);
+      logger.i('成功: ${exploreRes.success}, 餐廳數量: ${exploreRes.restaurants.length}');
 
-      if (userIds.isEmpty || restaurants.isEmpty) {
-        final result = await showExploreDialog(context);
-        
+      final restaurants = exploreRes.restaurants;
+
+      if (!exploreRes.success || restaurants.isEmpty) {
+        final result = await;
+
         if (result == null || result.isEmpty) {
           return const Center(child: Text('未輸入搜尋半徑，探索已取消'));
         }
+
         final newRadius = int.tryParse(result);
         if (newRadius == null || newRadius <= 0 || newRadius > 5000) {
           return const Center(child: Text('半徑大小需為 0~5000 公尺'));
         }
+
         searchRadius = newRadius;
         continue;
       }
+
       // 抓到資料可以顯示
-      final recommendedRestos = randomRecommend(restaurants);
+      final recommendedRestos = _randomRecommend(restaurants);
       return ListView(
         padding: const EdgeInsets.all(8),
         children: recommendedRestos.entries.map((entry) {
@@ -120,13 +120,6 @@ class _ExplorePageState extends State<ExplorePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final user = Provider.of<AppState>(context).user;
-    if (user == null) {
-      return const Center(child: Text('請先登入以查看推薦餐廳'));
-    }
-    final uid = user.uid;
-    final service = FirebaseService(userID: uid);
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -136,7 +129,7 @@ class _ExplorePageState extends State<ExplorePage> {
           icon: Icon(Icons.my_location),
           tooltip: '重新定位',
         ),
-        title: Text('探 索'),
+        title: Text('探索'),
         centerTitle: true,
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
@@ -152,9 +145,9 @@ class _ExplorePageState extends State<ExplorePage> {
           }
           final pos = locSnap.data!;
           final center = GeoPoint(pos.latitude, pos.longitude);
-          print('${center.latitude}, ${center.longitude}');
+          logger.i('${center.latitude}, ${center.longitude}');
           return FutureBuilder<Widget>(
-            future: buildExploreResults(context, uid, center, service),
+            future: buildExploreResults(context, center),
             builder: (context, snap) {
               if (snap.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());

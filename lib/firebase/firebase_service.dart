@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:dart_geohash/dart_geohash.dart';
 
 import '../logging/logging.dart';
 import '../utils/geolocation_utils.dart';
@@ -425,6 +427,97 @@ class FirebaseService {
     }
     return response;
   }
-  
+
+  /// 找出半徑內的使用者的餐廳們
+  static Future<ExploreResponse> fetchNearbyUserRestaurants(
+    GeoPoint center, 
+    int radius, 
+    {int precision = 5}
+  ) async {
+    final GeoHasher geoHasher = GeoHasher();
+    final user = FirebaseAuth.instance.currentUser;
+    final response = ExploreResponse(success: false, message: '', restaurants: []);
+
+    if (user == null) {
+      response.message = '尚未登入，無法使用探索功能';
+      return response;
+    }
+
+    final userId = user.uid;
+
+    try {
+      // 把使用者目前的位置轉成 geohash
+      final myHash = geoHasher.encode(center.longitude, center.latitude, precision: precision);
+      final hashes = geoHasher.neighbors(myHash).values.toList();
+
+      // 根據 geohash 縮小尋找範圍
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .where('geohash', whereIn: hashes)
+          .get();
+
+      final userIds = <String>[];
+
+      for (var doc in snap.docs) {
+        final data = doc.data();
+        if (data['location'] is! GeoPoint) continue;
+
+        final GeoPoint geo = data['location'];
+        final dist = Geolocator.distanceBetween(center.latitude, center.longitude, geo.latitude, geo.longitude);
+
+        if (dist <= radius && doc.id != userId) {
+          userIds.add(doc.id);
+        }
+      }
+
+      /// 收集在範圍內使用者的前五個公開清單中的所有餐廳資料
+      for (var uid in userIds) {
+        try {
+          final listsSnap = await FirebaseFirestore.instance
+              .collection(CollectionNames.personalLists)
+              .where('userID', isEqualTo: uid)
+              .where('isPublic', isEqualTo: true)
+              .limit(5)
+              .get();
+          /// 去遍歷該使用者的所有公開清單
+          for (var list in listsSnap.docs) {
+            try {
+              final restaurantsSnap = await list.reference
+                  .collection(CollectionNames.restaurants)
+                  .get();
+
+              for (var resDoc in restaurantsSnap.docs) {
+                final data = resDoc.data();
+                response.restaurants.add(data);
+              }
+            } on FirebaseException catch (e) {
+              logger.w('讀取餐廳資料錯誤: $e');
+              continue; // 忽略這個 list，繼續處理其他清單
+            } catch (e) {
+              logger.w('未知錯誤讀取餐廳資料: $e');
+              continue;
+            }
+          }
+        } on FirebaseException catch (e) {
+          logger.w('讀取使用者清單錯誤: $e');
+          continue; // 忽略這個使用者
+        } catch (e) {
+          logger.w('未知錯誤讀取使用者清單: $e');
+          continue;
+        }
+      }
+
+      response.success = true;
+      response.message = '成功取得附近使用者的餐廳資料';
+    } on FirebaseException catch (e) {
+      logger.w('Firestore 查詢失敗: $e');
+      response.message = '資料庫錯誤：${e.message}';
+    } catch (e) {
+      logger.w('探索功能未知錯誤: $e');
+      response.message = '探索功能錯誤：$e';
+    }
+
+    return response;
+  }
 }
 
