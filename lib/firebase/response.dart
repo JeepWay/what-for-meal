@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:what_for_meal/firebase/model.dart';
 
 class SignInWithEmailResponse {
   SignInWithEmailResponse({required this.success, required this.message});
@@ -83,5 +84,5 @@ class ExploreResponse {
 
   bool success;
   String message;
-  List<Map<String, dynamic>> restaurants;
+  List<Restaurant> restaurants;
 }

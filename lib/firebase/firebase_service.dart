@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:dart_geohash/dart_geohash.dart';
+import 'package:what_for_meal/firebase/model.dart';
 
 import '../logging/logging.dart';
 import '../utils/geolocation_utils.dart';
@@ -428,7 +429,7 @@ class FirebaseService {
     return response;
   }
 
-  /// 找出半徑內的使用者的餐廳們
+  /// 找出半徑內的使用者的餐廳
   static Future<ExploreResponse> fetchNearbyUserRestaurants(
     GeoPoint center, 
     int radius, 
@@ -452,31 +453,31 @@ class FirebaseService {
 
       // 根據 geohash 縮小尋找範圍
       final snap = await FirebaseFirestore.instance
-          .collection('users')
-          .where('geohash', whereIn: hashes)
+          .collection(CollectionNames.users)
+          .where(UserFileds.geoHash, whereIn: hashes)
           .get();
 
       final userIds = <String>[];
 
       for (var doc in snap.docs) {
         final data = doc.data();
-        if (data['location'] is! GeoPoint) continue;
+        if (data[UserFileds.location] is! GeoPoint) continue;
 
-        final GeoPoint geo = data['location'];
+        final GeoPoint geo = data[UserFileds.location];
         final dist = Geolocator.distanceBetween(center.latitude, center.longitude, geo.latitude, geo.longitude);
-
+        // 有包含在 hashes 的使用者如果距離小於設定的 radius, 則放入 userIds
         if (dist <= radius && doc.id != userId) {
           userIds.add(doc.id);
         }
       }
 
-      /// 收集在範圍內使用者的前五個公開清單中的所有餐廳資料
+      // 收集在範圍內使用者的前五個公開清單中的所有餐廳資料
       for (var uid in userIds) {
         try {
           final listsSnap = await FirebaseFirestore.instance
               .collection(CollectionNames.personalLists)
-              .where('userID', isEqualTo: uid)
-              .where('isPublic', isEqualTo: true)
+              .where(PersonalListFields.userID, isEqualTo: uid)
+              .where(PersonalListFields.isPublic, isEqualTo: true)
               .limit(5)
               .get();
           /// 去遍歷該使用者的所有公開清單
@@ -488,11 +489,26 @@ class FirebaseService {
 
               for (var resDoc in restaurantsSnap.docs) {
                 final data = resDoc.data();
-                response.restaurants.add(data);
+
+                final restaurant = Restaurant(
+                  listID: list.id,
+                  restaurantID: resDoc.id,
+                  name: data[RestaurantFields.name] as String,
+                  description: data[RestaurantFields.description] as String,
+                  address: data[RestaurantFields.address] as String,
+                  geoHash: data[RestaurantFields.geoHash] as String,
+                  location: data[RestaurantFields.location] as GeoPoint,
+                  type: data[RestaurantFields.type] as String,
+                  price: data[RestaurantFields.price] as String,
+                  hasAC: data[RestaurantFields.hasAC] as bool,
+                  creatTime: data[RestaurantFields.creatTime] as Timestamp?,
+                  updateTime: data[RestaurantFields.updateTime] as Timestamp?,
+                );
+                response.restaurants.add(restaurant);
               }
             } on FirebaseException catch (e) {
               logger.w('讀取餐廳資料錯誤: $e');
-              continue; // 忽略這個 list，繼續處理其他清單
+              continue; // 忽略這個 list, 繼續處理其他清單
             } catch (e) {
               logger.w('未知錯誤讀取餐廳資料: $e');
               continue;
