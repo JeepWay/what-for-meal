@@ -97,11 +97,14 @@ class RestaurantDismissibleCard extends StatelessWidget {
             Text('地址: ${restaurant.address}'),
             Text('描述: ${restaurant.description}'),
             const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            Wrap(
+              spacing: 2,
+              runSpacing: 6,
+              alignment: WrapAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.restaurant_menu),
                     const SizedBox(width: 2,),
@@ -110,6 +113,7 @@ class RestaurantDismissibleCard extends StatelessWidget {
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.attach_money),
                     const SizedBox(width: 2,),
@@ -118,6 +122,7 @@ class RestaurantDismissibleCard extends StatelessWidget {
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.ac_unit),
                     const SizedBox(width: 2,),
