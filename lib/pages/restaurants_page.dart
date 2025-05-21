@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:what_for_meal/firebase/constants.dart';
+import 'package:provider/provider.dart';
 
+import '../states/app_state.dart';
 import '../firebase/firebase_service.dart';
 import '../firebase/model.dart';
 import '../widgets/dialog.dart';
@@ -128,61 +128,34 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
         ),
         actions: _getAppBarActions(),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection(CollectionNames.personalLists)
-            .doc(widget.list.listID)
-            .collection(CollectionNames.restaurants)
-            .snapshots(),
-        builder: (context, snapshot) {
-          final theme = Theme.of(context);
-          if (snapshot.hasError) {
-            return Center(child: Text('發生錯誤：${snapshot.error}', style: theme.textTheme.titleLarge));
+      body: Consumer<AppState>(
+        builder: (context, appState, child) {
+          final personalRestaurants = appState.personalRestaurants;
+          if (personalRestaurants.isEmpty) {
+            return Center(
+              child: Text('此清單中沒有餐廳', style: theme.textTheme.titleLarge,)
+            );
           }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final restaurants = snapshot.data!.docs;
-          if (restaurants.isEmpty) {
-            return Center(child: Text('此清單中沒有餐廳', style: theme.textTheme.titleLarge,));
-          }
-
           return ListView.builder(
             padding: const EdgeInsets.all(14),
-            itemCount: restaurants.length,
+            itemCount: personalRestaurants.length,
             itemBuilder: (context, index) {
-              final restaurantDoc = restaurants[index];
-              final data = restaurantDoc.data() as Map<String, dynamic>;
-              final restaurant = Restaurant(
-                listID: widget.list.listID, 
-                restaurantID: restaurantDoc.id,
-                name: data[RestaurantFields.name] as String? ?? '無標題', 
-                description: data[RestaurantFields.description] as String? ?? '沒有描述', 
-                address: data[RestaurantFields.address] as String? ?? '地址未知',
-                geoHash: data[RestaurantFields.geoHash] as String? ?? '無標題',
-                location: data[RestaurantFields.location] as GeoPoint? ?? GeoPoint(0,0),
-                type: data[RestaurantFields.type] as String? ?? '沒有提供價類型', 
-                price: data[RestaurantFields.price] as String? ?? '沒有提供價格', 
-                hasAC: data[RestaurantFields.hasAC] as bool? ?? false, 
-                creatTime: data[RestaurantFields.creatTime] as Timestamp?,
-                updateTime: data[RestaurantFields.updateTime] as Timestamp?,
-              );
+              final restaurant = personalRestaurants[index];
               return RestaurantDismissibleCard(
                 restaurant: restaurant,
                 dismissible: widget.editable,
                 onDismissed: () async {
                   final response = await FirebaseService.deleteRestaurant(
-                    listID: restaurant.listID, 
+                    listID: restaurant.listID,
                     restaurantID: restaurant.restaurantID,
                   );
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: response.success 
-                          ? Text('已從清單中刪除該餐廳： ${restaurant.name}', textAlign: TextAlign.center,)
-                          : Text(response.message, textAlign: TextAlign.center,),
-                        duration: Duration (seconds: 3),
+                        content: response.success
+                          ? Text('已從清單中刪除該餐廳： ${restaurant.name}', textAlign: TextAlign.center)
+                          : Text(response.message, textAlign: TextAlign.center),
+                        duration: Duration(seconds: 3),
                         showCloseIcon: true,
                       ),
                     );

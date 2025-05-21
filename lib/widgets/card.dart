@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
+import '../states/app_state.dart';
 import '../firebase/model.dart';
 import '../pages/restaurants_page.dart';
 import '../widgets/dialog.dart';
@@ -41,6 +43,8 @@ class ListDismissibleCard extends StatelessWidget{
         ),
         subtitleTextStyle: theme.textTheme.titleSmall,
         onTap: () {
+          Provider.of<AppState>(context, listen: false)
+            .setSelectedListID(list.listID);
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => RestaurantsListScreen(list: list, editable: fromPersonal),
