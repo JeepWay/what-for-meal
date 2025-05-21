@@ -345,157 +345,159 @@ class _AddRestaurantDialogState extends State<AddRestaurantDialog> {
       title: Center(
         child: Text('新增餐廳', style: theme.textTheme.titleLarge)
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('請輸入餐廳資訊', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 10),
-          Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextFormField(
-                  controller: _nameController,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                    labelText: '名稱',
-                    labelStyle: theme.textTheme.titleMedium,
-                    prefixIcon: const Icon(Icons.storefront),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '請輸入餐廳名稱';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 6),
-                
-                TransparentTextButton(
-                  onPressed: _launchGoogleMap,
-                  label: Text('開啟 Google Map 查地址'),
-                  icon: Icon(Icons.near_me, color: theme.colorScheme.primary),
-                ),
-                const SizedBox(height: 6),
-
-                TextFormField(
-                  controller: _addressController,
-                  keyboardType: TextInputType.streetAddress,
-                  decoration: InputDecoration(
-                    labelText: '地址',
-                    labelStyle: theme.textTheme.titleMedium,
-                    prefixIcon: const Icon(Icons.location_on),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '請輸入餐廳地址\n或開啟 Google Map 來查詢';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 6),
-
-                if (_errorMessage.isNotEmpty) 
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Text(
-                      _errorMessage,
-                      style: theme.textTheme.titleSmall!.copyWith(
-                        color: theme.colorScheme.error
-                      ),
-                      textAlign: TextAlign.center,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('請輸入餐廳資訊', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 10),
+            Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      labelText: '名稱',
+                      labelStyle: theme.textTheme.titleMedium,
+                      prefixIcon: const Icon(Icons.storefront),
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '請輸入餐廳名稱';
+                      }
+                      return null;
+                    },
                   ),
+                  const SizedBox(height: 6),
 
-                TextFormField(
-                  controller: _descriptionController,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                    labelText: '描述',
-                    labelStyle: theme.textTheme.titleMedium,
-                    prefixIcon: const Icon(Icons.description),
+                  TransparentTextButton(
+                    onPressed: _launchGoogleMap,
+                    label: Text('開啟 Google Map 查地址'),
+                    icon: Icon(Icons.near_me, color: theme.colorScheme.primary),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '請輸入餐廳描述';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 6),
+                  const SizedBox(height: 6),
 
-                DropdownButtonFormField<String>(
-                  value: _selectedType,
-                  decoration: InputDecoration(
-                    labelText: '類型',
-                    labelStyle: theme.textTheme.titleMedium,
-                    prefixIcon: const Icon(Icons.restaurant_menu),
+                  TextFormField(
+                    controller: _addressController,
+                    keyboardType: TextInputType.streetAddress,
+                    decoration: InputDecoration(
+                      labelText: '地址',
+                      labelStyle: theme.textTheme.titleMedium,
+                      prefixIcon: const Icon(Icons.location_on),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '請輸入餐廳地址\n或開啟 Google Map 來查詢';
+                      }
+                      return null;
+                    },
                   ),
-                  items: const [
-                    DropdownMenuItem(value: '中式', child: Text('中式')),
-                    DropdownMenuItem(value: '西式', child: Text('西式')),
-                    DropdownMenuItem(value: '日式', child: Text('日式')),
-                    DropdownMenuItem(value: '台式', child: Text('台式')),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedType = value;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return '請選擇餐廳類型';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 6),
+                  const SizedBox(height: 6),
 
-                DropdownButtonFormField<String>(
-                  value: _selectedPrice,
-                  decoration: InputDecoration(
-                    labelText: '價格範圍',
-                    labelStyle: theme.textTheme.titleMedium,
-                    prefixIcon: const Icon(Icons.attach_money),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: '1-99', child: Text('1-99')),
-                    DropdownMenuItem(value: '100-199', child: Text('100-199')),
-                    DropdownMenuItem(value: '200-299', child: Text('200-299')),
-                    DropdownMenuItem(value: '300以上', child: Text('300以上')),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedPrice = value;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return '請選擇價格範圍';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 6),
+                  if (_errorMessage.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        _errorMessage,
+                        style: theme.textTheme.titleSmall!.copyWith(
+                          color: theme.colorScheme.error
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
 
-                CheckboxListTile(
-                  title: Text(
-                    '是否有冷氣',
-                    style: theme.textTheme.titleMedium,
+                  TextFormField(
+                    controller: _descriptionController,
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      labelText: '描述',
+                      labelStyle: theme.textTheme.titleMedium,
+                      prefixIcon: const Icon(Icons.description),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '請輸入餐廳描述';
+                      }
+                      return null;
+                    },
                   ),
-                  value: _hasAC,
-                  onChanged: (value) {
-                    setState(() {
-                      _hasAC = value ?? false; // ensure value isn't null
-                    });
-                  },
-                  secondary: const Icon(Icons.ac_unit),
-                ),
-              ],
+                  const SizedBox(height: 6),
+
+                  DropdownButtonFormField<String>(
+                    value: _selectedType,
+                    decoration: InputDecoration(
+                      labelText: '類型',
+                      labelStyle: theme.textTheme.titleMedium,
+                      prefixIcon: const Icon(Icons.restaurant_menu),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: '中式', child: Text('中式')),
+                      DropdownMenuItem(value: '西式', child: Text('西式')),
+                      DropdownMenuItem(value: '日式', child: Text('日式')),
+                      DropdownMenuItem(value: '台式', child: Text('台式')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedType = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return '請選擇餐廳類型';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 6),
+
+                  DropdownButtonFormField<String>(
+                    value: _selectedPrice,
+                    decoration: InputDecoration(
+                      labelText: '價格範圍',
+                      labelStyle: theme.textTheme.titleMedium,
+                      prefixIcon: const Icon(Icons.attach_money),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: '1-99', child: Text('1-99')),
+                      DropdownMenuItem(value: '100-199', child: Text('100-199')),
+                      DropdownMenuItem(value: '200-299', child: Text('200-299')),
+                      DropdownMenuItem(value: '300以上', child: Text('300以上')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedPrice = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return '請選擇價格範圍';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 6),
+
+                  CheckboxListTile(
+                    title: Text(
+                      '是否有冷氣',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    value: _hasAC,
+                    onChanged: (value) {
+                      setState(() {
+                        _hasAC = value ?? false; // ensure value isn't null
+                      });
+                    },
+                    secondary: const Icon(Icons.ac_unit),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         Row(
