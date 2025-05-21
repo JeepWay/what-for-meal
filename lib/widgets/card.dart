@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 
 import '../firebase/model.dart';
 import '../pages/restaurants_page.dart';
+import '../widgets/dialog.dart';
+import '../logging/logging.dart';
 
 class ListDismissibleCard extends StatelessWidget{
 
@@ -60,6 +62,16 @@ class ListDismissibleCard extends StatelessWidget{
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Icon(Icons.delete, color: theme.colorScheme.onError),
         ),
+        confirmDismiss: (direction) async {
+          final result = await showDialog<bool>(
+            context: context,
+            builder: (context) {
+              return DoubleCheckDismissDialog();
+            },
+          );
+          logger.d('Confirm result for dismiss list: $result');
+          return result ?? false;
+        },
         onDismissed: (direction) => onDismissed!(),
         child: card,
       );
@@ -147,6 +159,16 @@ class RestaurantDismissibleCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Icon(Icons.delete, color: theme.colorScheme.onError),
         ),
+        confirmDismiss: (direction) async {
+          final result = await showDialog<bool>(
+            context: context,
+            builder: (context) {
+              return DoubleCheckDismissDialog();
+            },
+          );
+          logger.d('Confirm result for dismiss restaurant: $result');
+          return result ?? false;
+        },
         onDismissed: (direction) => onDismissed!(),
         child: card,
       );
