@@ -20,8 +20,23 @@ class AppState extends ChangeNotifier {
   List<PersonalList> _publicLists = [];
   List<PersonalList> get publicLists => _publicLists;
 
+  String? _selectedPersonalListID;
+  String? get selectedPersonalListID => _selectedPersonalListID;
+
+  StreamSubscription<QuerySnapshot>? _personalRestaurantsSubscription;
+  List<Restaurant> _personalRestaurants = [];
+  List<Restaurant> get personalRestaurants => _personalRestaurants;
+
   AppState() {
     logger.i('Creating AppState object, call _initAsync() after create it !!');
+  }
+
+  @override
+  void dispose() {
+    _personalListsSubscription?.cancel();
+    _publicListsSubscription?.cancel();
+    _personalRestaurantsSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> initAsync() async {   
@@ -103,5 +118,56 @@ class AppState extends ChangeNotifier {
       logger.i('Cancel personalLists subscription');
       notifyListeners();
     }
+  }
+
+  void setSelectedListID(String? listId) {
+    if (_selectedPersonalListID != listId) {
+      _selectedPersonalListID = listId;
+      _updatePersonalRestaurantsSubscription();
+    }
+  }
+  
+  void _updatePersonalRestaurantsSubscription() {
+    _cancelPersonalRestaurantsSubscription(); // cancel old subscription
+    if (_selectedPersonalListID != null && _user != null) {
+      logger.i('Starting restaurants subscription for listID: $_selectedPersonalListID');
+      _personalRestaurantsSubscription = FirebaseFirestore.instance
+          .collection(CollectionNames.personalLists)
+          .doc(_selectedPersonalListID)
+          .collection(CollectionNames.restaurants)
+          .snapshots()
+          .listen((snapshot) {
+        _personalRestaurants = snapshot.docs.map((doc) {
+          final data = doc.data();
+          return Restaurant(
+            listID: _selectedPersonalListID!,
+            restaurantID: doc.id,
+            name: data[RestaurantFields.name] as String? ?? '無標題',
+            description: data[RestaurantFields.description] as String? ?? '沒有描述',
+            address: data[RestaurantFields.address] as String? ?? '地址未知',
+            geoHash: data[RestaurantFields.geoHash] as String? ?? '無標題',
+            location: data[RestaurantFields.location] as GeoPoint? ?? GeoPoint(0, 0),
+            type: data[RestaurantFields.type] as String? ?? '沒有提供價類型',
+            price: data[RestaurantFields.price] as String? ?? '沒有提供價格',
+            hasAC: data[RestaurantFields.hasAC] as bool? ?? false,
+            creatTime: data[RestaurantFields.creatTime] as Timestamp?,
+            updateTime: data[RestaurantFields.updateTime] as Timestamp?,
+          );
+        }).toList();
+        logger.i('餐廳數量: ${_personalRestaurants.length}');
+        notifyListeners();
+      }, onError: (error) {
+        logger.w('監聽個人清單裡的餐廳發生錯誤: $error');
+      });
+    } else {
+      logger.w('沒有選擇清單或者尚未登入');
+    }
+  }
+
+  void _cancelPersonalRestaurantsSubscription() {
+    logger.i('Cancel restaurants subscription');
+    _personalRestaurantsSubscription?.cancel();
+    _personalRestaurants = [];
+    notifyListeners();
   }
 }
