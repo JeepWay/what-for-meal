@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:dart_geohash/dart_geohash.dart';
 import 'package:what_for_meal/firebase/model.dart';
+import 'package:what_for_meal/utils/location_helper.dart';
 
 import '../logging/logging.dart';
 import '../utils/geolocation_utils.dart';
@@ -13,6 +14,8 @@ import 'response.dart';
 import 'constants.dart';
 
 class FirebaseService {
+  static final GeoHasher geoHasher = GeoHasher();
+
   /// Firebase setup
   static Future<void> initializeFirebase() async {
     await Firebase.initializeApp(
@@ -75,7 +78,6 @@ class FirebaseService {
           UserFileds.email: credential.user!.email,
           UserFileds.lastSignIn: FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
-
       logger.i('Sign in with Google successfully: ${credential.user}');
       response.success = true;
       response.message = '以 Google 帳號登入成功';
@@ -120,6 +122,7 @@ class FirebaseService {
           UserFileds.signUpTime: FieldValue.serverTimestamp(),
           UserFileds.lastSignIn: FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
+      saveLocation();
       logger.i('Sign up successfully: ${credential.user}');
       response.success = true;
       response.message = '註冊成功，將轉移到主頁面';
@@ -162,6 +165,7 @@ class FirebaseService {
         }, SetOptions(merge: true));
 
       await FirebaseAuth.instance.signOut();
+      await saveLocation();
       logger.i('Sign out successfully');
       response.success = true;
       response.message = '成功登出';
@@ -435,7 +439,6 @@ class FirebaseService {
     int radius, 
     {int precision = 5}
   ) async {
-    final GeoHasher geoHasher = GeoHasher();
     final user = FirebaseAuth.instance.currentUser;
     final response = ExploreResponse(success: false, message: '', restaurants: []);
 
@@ -534,6 +537,33 @@ class FirebaseService {
     }
 
     return response;
+  }
+
+  static Future<void> saveLocation() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      logger.i('使用者未登入');
+      return;
+    }
+
+    final userId = user.uid;
+    try{
+      final pos = await determinePosition();
+      final geoHash = geoHasher.encode(pos.longitude, pos.latitude, precision: 5);
+      await FirebaseFirestore.instance
+        .collection(CollectionNames.users)
+        .doc(userId)
+        .update({
+          UserFileds.location: GeoPoint(pos.latitude, pos.longitude),
+          UserFileds.geoHash: geoHash,
+        });
+      logger.i('成功記錄 $userId 的位置');
+    } on FirebaseException catch (e) {
+      logger.w('Can not save location, FireStore error $e');
+    } catch (e) {
+      logger.w('Can not save location, Unknown error $e');
+    }
   }
 }
 

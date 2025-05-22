@@ -2,10 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:what_for_meal/firebase/model.dart';
-import 'package:what_for_meal/utils/geolocation_utils.dart';
 import 'package:what_for_meal/widgets/card.dart';
 import '../logging/logging.dart';
 
@@ -20,7 +18,7 @@ class ExplorePage extends StatefulWidget {
   State<ExplorePage> createState() => _ExplorePageState();
 }
 
-class _ExplorePageState extends State<ExplorePage> {
+class _ExplorePageState extends State<ExplorePage> with WidgetsBindingObserver{
   final _radiusController = TextEditingController(text: '500');
   Position? _position;
   bool _loading = false;
@@ -30,16 +28,38 @@ class _ExplorePageState extends State<ExplorePage> {
   @override
   void initState() {
     super.initState();
-    _determinePosition();
+    WidgetsBinding.instance.addObserver(this);
+    _currentPosition().then((_) {
+      // 如果定位成功呼叫 _search()
+      if (_position != null) {
+        _search();
+      }
+    });
   }
 
   @override
   void dispose() {
     _radiusController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  Future<void> _determinePosition() async {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // App 從 paused 或 inactive 回到 resumed 時
+      _currentPosition().then((_) {
+        if (_position != null) {
+          _radiusController.text = '500';
+          _search();
+        }
+      });
+    }
+  }
+  
+  // 呼叫 location_helper 的 determinePosition() 得到使用者目前的位置
+  Future<void> _currentPosition() async {
     try {
       final pos = await determinePosition();
       logger.i(pos);
@@ -60,6 +80,7 @@ class _ExplorePageState extends State<ExplorePage> {
 
     final radius = int.tryParse(_radiusController.text);
     if (radius == null || radius <= 0 || radius > 5000) {
+      setState(() => _radiusController.clear());
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('半徑需介於 1~5000 公尺'))
       );
@@ -84,6 +105,7 @@ class _ExplorePageState extends State<ExplorePage> {
         if (_restaurants.isEmpty && res.success) {
           _errorMessage = '方圓 ${radius}m 內沒有資料，請增加搜尋半徑來探索美食！';
         }
+        // case 2. 搜尋失敗，在螢幕上顯示問題
         else if (!res.success){
           _errorMessage = res.message;
         }
@@ -95,6 +117,7 @@ class _ExplorePageState extends State<ExplorePage> {
     }
   }
 
+  // 按比例去隨機挑餐廳
   Map<String, List<Restaurant>> _randomRecommend(List<Restaurant> list) {
     final byCat = <String, List<Restaurant>>{};
     for (var r in list) {
@@ -106,7 +129,6 @@ class _ExplorePageState extends State<ExplorePage> {
     final out = <String, List<Restaurant>>{};
 
     byCat.forEach((cat, items) {
-      // 按比例去隨機抽餐廳
       final count = ((items.length / total) * 30).round();
       out[cat] = [];
       for (var i = 0; i < count && items.isNotEmpty; i++) {
@@ -135,7 +157,7 @@ class _ExplorePageState extends State<ExplorePage> {
           IconButton(
             tooltip: '重新定位',
             icon: const Icon(Icons.my_location),
-            onPressed: _determinePosition,
+            onPressed: _currentPosition,
           )
         ],
       ),
@@ -143,6 +165,7 @@ class _ExplorePageState extends State<ExplorePage> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
+            SizedBox(height: 12,),
             // 半徑輸入 + 探索按鈕
             Row(
               children: [
@@ -158,7 +181,12 @@ class _ExplorePageState extends State<ExplorePage> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: _loading ? null : _search,
+                  onPressed: _loading 
+                      ? null
+                      : () {
+                        FocusScope.of(context).unfocus(); // 按下探索後會關掉鍵盤
+                          _search();
+                        },
                   child: const Text('探索'),
                 ),
               ],
