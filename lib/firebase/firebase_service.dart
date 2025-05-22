@@ -164,8 +164,8 @@ class FirebaseService {
           UserFileds.lastSignOut: FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
 
-      await FirebaseAuth.instance.signOut();
       await saveLocation();
+      await FirebaseAuth.instance.signOut();
       logger.i('Sign out successfully');
       response.success = true;
       response.message = '成功登出';

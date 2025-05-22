@@ -35,12 +35,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    super.dispose();
     WidgetsBinding.instance.removeObserver(this);
-  }
-
-  @override
-  void dispose() {
     _personalListsSubscription?.cancel();
     _publicListsSubscription?.cancel();
     _personalRestaurantsSubscription?.cancel();
