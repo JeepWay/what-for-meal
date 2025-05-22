@@ -2,12 +2,13 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:what_for_meal/firebase/firebase_service.dart';
 
 import '../firebase/constants.dart';
 import '../firebase/model.dart';
 import '../logging/logging.dart';
 
-class AppState extends ChangeNotifier {
+class AppState extends ChangeNotifier with WidgetsBindingObserver {
   User? _user;
   User? get user => _user;
   bool get loggedIn => (_user != null);
@@ -29,6 +30,13 @@ class AppState extends ChangeNotifier {
 
   AppState() {
     logger.i('Creating AppState object, call _initAsync() after create it !!');
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   @override
@@ -57,6 +65,17 @@ class AppState extends ChangeNotifier {
       });
     } catch (e) {
       logger.w('Add authStateChanges subscription failed: $e');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.paused) {
+      logger.i('使用者離開 App, 儲存最新定位');
+      FirebaseService.saveLocation();
+      
     }
   }
 
