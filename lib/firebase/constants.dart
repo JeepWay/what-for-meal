@@ -11,9 +11,9 @@ class UserFileds {
   static const String userName = 'userName';
   static const String geoHash = 'geoHash';
   static const String location = 'location';
-  static const String signUpTime = 'creasignUpTimetTime';
+  static const String signUpTime = 'signUpTime';
   static const String lastSignIn = 'lastSignIn';
-  static const String lastSignOut = 'lastSignIn';
+  static const String lastSignOut = 'lastSignOut';
 }
 
 class PersonalListFields {
