@@ -37,7 +37,7 @@ class ListDismissibleCard extends StatelessWidget{
           crossAxisAlignment : CrossAxisAlignment.start,
           children: [
             Text('創建者: ${list.userName}'),
-            Text('修改時間: ${list.creatTimeAsDate != null ? dateFormat.format(list.creatTimeAsDate!) : '未知'}'),
+            Text('修改時間: ${list.updateTimeAsDate != null ? dateFormat.format(list.updateTimeAsDate!) : '未知'}'),
             Text('公開狀態: ${list.isPublic? '已公開' : '未公開'}'),
           ],
         ),

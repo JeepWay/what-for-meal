@@ -126,24 +126,32 @@ class _MainPageState extends State<MainPage>  with SingleTickerProviderStateMixi
                 itemCount: personalLists.length,
                 itemBuilder: (context, index) {
                   final list = personalLists[index];
-                  return ListDismissibleCard(
-                    list: list,
-                    dismissible: true,
-                    onDismissed: () async {
-                      final response = await FirebaseService.deleteList(listID: list.listID);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: response.success 
-                              ? Text('已刪除清單： ${list.title}', textAlign: TextAlign.center,)
-                              : Text(response.message, textAlign: TextAlign.center,),
-                            duration: Duration (seconds: 3),
-                            showCloseIcon: true,
-                          ),
-                        );
-                      }
+                  return GestureDetector(
+                    onLongPress: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => EditListDialog(list: list),
+                      );
                     },
-                    fromPersonal: true,
+                    child: ListDismissibleCard(
+                      list: list,
+                      dismissible: true,
+                      onDismissed: () async {
+                        final response = await FirebaseService.deleteList(listID: list.listID);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: response.success 
+                                ? Text('已刪除清單： ${list.title}', textAlign: TextAlign.center,)
+                                : Text(response.message, textAlign: TextAlign.center,),
+                              duration: Duration (seconds: 3),
+                              showCloseIcon: true,
+                            ),
+                          );
+                        }
+                      },
+                      fromPersonal: true,
+                    ),
                   );
                 },
               );

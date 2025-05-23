@@ -666,6 +666,106 @@ class _PublicizePersonalListDialogState extends State<PublicizePersonalListDialo
   }
 }
 
+
+class EditListDialog extends StatefulWidget {
+  const EditListDialog({super.key, required this.list});
+
+  final PersonalList list;
+
+  @override
+  State<EditListDialog> createState() => _EditListDialogState();
+}
+
+class _EditListDialogState extends State<EditListDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _titleController;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.list.title);
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _updateList() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final response = await FirebaseService.updateList(
+      listID: widget.list.listID,
+      updates: {
+        'title': _titleController.text.trim(),
+      },
+    );
+
+    if (response.success) {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } else {
+      setState(() {
+        _errorMessage = response.message;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return AlertDialog(
+      title: Text('編輯清單', style: theme.textTheme.titleLarge),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                labelText: '清單標題',
+                labelStyle: theme.textTheme.titleMedium,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '請輸入清單標題';
+                }
+                return null;
+              },
+            ),
+            if (_errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  _errorMessage,
+                  style: TextStyle(color: theme.colorScheme.error),
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('取消'),
+        ),
+        ElevatedButton(
+          onPressed: _updateList,
+          child: const Text('儲存'),
+        ),
+      ],
+    );
+  }
+}
+
+
 class DoubleCheckDismissDialog extends StatelessWidget {
   const DoubleCheckDismissDialog({super.key});
 
