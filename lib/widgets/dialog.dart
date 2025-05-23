@@ -666,6 +666,7 @@ class _PublicizePersonalListDialogState extends State<PublicizePersonalListDialo
   }
 }
 
+
 class EditListDialog extends StatefulWidget {
   const EditListDialog({super.key, required this.list});
 
@@ -764,3 +765,41 @@ class _EditListDialogState extends State<EditListDialog> {
   }
 }
 
+
+class DoubleCheckDismissDialog extends StatelessWidget {
+  const DoubleCheckDismissDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
+      title: Center(
+        child: Text('確認刪除', style: theme.textTheme.titleLarge)
+      ),
+      content: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          '確定要刪除這個清單/餐廳嗎？', 
+          style: theme.textTheme.titleMedium,
+          textAlign: TextAlign.center,
+        ),
+      ),
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            WhiteElevatedButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              label: const Text('取消'),
+            ),
+            PrimaryElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              label: const Text('確定'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}

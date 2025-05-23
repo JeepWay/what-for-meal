@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:what_for_meal/firebase/model.dart';
 
 class SignInWithEmailResponse {
   SignInWithEmailResponse({required this.success, required this.message});
@@ -76,4 +77,12 @@ class DeleteRestaurantResponse {
 
   bool success;
   String message;
+}
+
+class ExploreResponse {
+  ExploreResponse({required this.success, required this.message, required this.restaurants,});
+
+  bool success;
+  String message;
+  List<Restaurant> restaurants;
 }
