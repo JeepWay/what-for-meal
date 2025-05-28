@@ -32,7 +32,7 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text(
-                  '點擊餐聽可查看餐廳的詳細資訊\n左滑餐聽可刪除該清單',
+                  '點擊餐廳可查看餐廳的詳細資訊\n左滑餐廳可刪除該清單\n長按餐廳可編輯該清單',
                   textAlign: TextAlign.center,
                 ),
                 duration: Duration(seconds: 3),
