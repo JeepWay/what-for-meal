@@ -86,3 +86,11 @@ class ExploreResponse {
   String message;
   List<Restaurant> restaurants;
 }
+
+class UpdateRestaurantResponse {
+  UpdateRestaurantResponse({required this.success, required this.message});
+
+  bool success;
+  String message;
+  DocumentReference? doc;
+}
