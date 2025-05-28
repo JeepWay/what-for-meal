@@ -151,7 +151,18 @@ class RestaurantDismissibleCard extends StatelessWidget {
         ),
         subtitleTextStyle: theme.textTheme.titleSmall,
         onTap: () {
-          // TODO 點擊餐廳卡片，跳出新的頁面，顯示更多內容、提供修改、以 Map 開啟、返回餐廳列表等功能
+          // TODO 點擊餐廳卡片，顯示更多內容、以 Map 開啟、返回餐廳列表等功能
+        },
+        onLongPress: () {
+          if (fromPersonal) {
+            showDialog(
+              context: context,
+              builder: (context) => EditRestaurantDialog(
+                restaurant: restaurant,
+              ),
+            );
+            logger.d('user onLongPress and show EditRestaurantDialog');
+          }
         },
       ),
     );
