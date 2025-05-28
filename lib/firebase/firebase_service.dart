@@ -565,5 +565,76 @@ class FirebaseService {
       logger.w('Can not save location, Unknown error $e');
     }
   }
+
+  /// 更新個人餐廳資訊
+  static Future<UpdateRestaurantResponse> updateRestaurant({
+    required String restaurantID,
+    required String listID,
+    required Map<String, dynamic> updates,
+  }) async {
+    final response = UpdateRestaurantResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法更新餐廳資訊';
+      return response;
+    }
+
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final restaurantRef = firestore
+          .collection(CollectionNames.personalLists)
+          .doc(listID)
+          .collection(CollectionNames.restaurants)
+          .doc(restaurantID);
+
+      // 檢查餐廳是否存在
+      final restaurantSnapshot = await restaurantRef.get();
+      if (!restaurantSnapshot.exists) {
+        logger.w('Restaurant does not exist: $restaurantID in list: $listID');
+        response.message = '更新餐廳失敗，該餐廳並未存在: $restaurantID';
+        return response;
+      }
+      
+      if (updates.containsKey('address')) {
+        final address = updates['address'];
+        try {
+          final geoResult = await convertAddressToGeohash(address.trim());
+          updates[RestaurantFields.geoHash] = geoResult['geohash'];
+          updates[RestaurantFields.location] = GeoPoint(geoResult['latitude'], geoResult['longitude']);
+        } catch (e) {
+          logger.w('Add restaurantt failed.\nLocation error $e');
+          response.message = '地址查詢失敗：請輸入正確的地址';
+          return response;
+        }
+      }
+
+      // 添加更新時間
+      final updatedData = {
+        ...updates,
+        RestaurantFields.updateTime: FieldValue.serverTimestamp(),
+      };
+
+      // 更新餐廳資訊
+      await restaurantRef.update(updatedData);
+      DocumentReference doc = FirebaseFirestore.instance
+        .collection(CollectionNames.personalLists)
+        .doc(listID)
+        .collection(CollectionNames.restaurants)
+        .doc(restaurantID);
+      response.doc = doc;
+
+      logger.i('Update restaurant: $restaurantID in list: $listID with data: ${updatedData.toString()} successfully');
+      response.success = true;
+      response.message = '成功更新餐廳資訊';
+    } on FirebaseException catch (e) {
+      logger.w('Update restaurant failed.\nFirestore error: $e');
+      response.message = '無法更新餐廳資訊: ${e.message}';
+    } catch (e) {
+      logger.w('Update restaurant failed.\nUnknown error: $e');
+      response.message = '未知錯誤: $e';
+    }
+    return response;
+  }
 }
 
