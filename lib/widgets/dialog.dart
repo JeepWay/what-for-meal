@@ -820,10 +820,13 @@ class ShowRestaurantDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [Text(restaurant.name)],),
+        children: [Text(restaurant.name)],
+      ),
       content: Padding(
         padding: EdgeInsets.all(8),
         child: Wrap(
@@ -834,13 +837,14 @@ class ShowRestaurantDialog extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.location_on_sharp),
-                const SizedBox(width: 4,),
+                const SizedBox(width: 10,),
                 Flexible(
                   child: GestureDetector(
                     onTap: () => _launchGoogleMap(restaurant.name, restaurant.address),
                     child: Text(
                       restaurant.address,
                       softWrap: true,
+                      style: theme.textTheme.titleMedium,
                     ),
                   ),
                 ),
@@ -849,7 +853,7 @@ class ShowRestaurantDialog extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.description),
-                const SizedBox(width: 4,),
+                const SizedBox(width: 10,),
                 Flexible(
                   child: Container(
                     constraints: BoxConstraints(
@@ -859,6 +863,7 @@ class ShowRestaurantDialog extends StatelessWidget {
                       child: Text(
                         restaurant.description,
                         softWrap: true,
+                        style: theme.textTheme.titleMedium,
                       ),
                     ),
                   ),
@@ -868,31 +873,31 @@ class ShowRestaurantDialog extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.restaurant_menu),
-                const SizedBox(width: 4,),
-                Text(restaurant.type)
+                const SizedBox(width: 10,),
+                Text(restaurant.type, style: theme.textTheme.titleMedium)
               ],
             ),
             Row(
               children: [
                 Icon(Icons.attach_money),
-                const SizedBox(width: 4,),
-                Text(restaurant.price)
+                const SizedBox(width: 10,),
+                Text(restaurant.price, style: theme.textTheme.titleMedium)
               ],
             ),
             Row(
               children: [
                 Icon(Icons.ac_unit),
-                const SizedBox(width: 4,),
-                Text(restaurant.hasAC ? '有冷氣' : '沒有冷氣')
+                const SizedBox(width: 10,),
+                Text(restaurant.hasAC ? '有冷氣' : '沒有冷氣', style: theme.textTheme.titleMedium)
               ],
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(
+        PrimaryElevatedButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text('關閉'),
+          label: Text('關閉'),
         ),
       ],
       actionsAlignment: MainAxisAlignment.center,
