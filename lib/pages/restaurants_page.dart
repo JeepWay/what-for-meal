@@ -130,7 +130,7 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
       ),
       body: Consumer<AppState>(
         builder: (context, appState, child) {
-          final personalRestaurants = appState.personalRestaurants;
+          final personalRestaurants = appState.restaurantsInMain;
           if (personalRestaurants.isEmpty) {
             return Center(
               child: Text('此清單中沒有餐廳', style: theme.textTheme.titleLarge,)

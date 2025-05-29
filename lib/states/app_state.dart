@@ -21,12 +21,21 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   List<PersonalList> _publicLists = [];
   List<PersonalList> get publicLists => _publicLists;
 
-  String? _selectedPersonalListID;
-  String? get selectedPersonalListID => _selectedPersonalListID;
+  String? _selectedListIDInMain;
+  String? get selectedListIDInMain => _selectedListIDInMain;
 
-  StreamSubscription<QuerySnapshot>? _personalRestaurantsSubscription;
-  List<Restaurant> _personalRestaurants = [];
-  List<Restaurant> get personalRestaurants => _personalRestaurants;
+  StreamSubscription<QuerySnapshot>? _restaurantsSubscriptionInMain;
+  List<Restaurant> _restaurantsInMain = [];
+  List<Restaurant> get restaurantsInMain => _restaurantsInMain;
+
+  String? _selectedFilterTypeInMain;
+  String? get selectedFilterTypeInMain => _selectedFilterTypeInMain;
+
+  String? _selectedFilterPriceInMain;
+  String? get selectedFilterPriceInMain => _selectedFilterPriceInMain;
+
+  bool? _selectedFilterHasACInMain;
+  bool? get selectedFilterHasACInMain => _selectedFilterHasACInMain;
 
   AppState() {
     logger.i('Creating AppState object, call _initAsync() after create it !!');
@@ -38,7 +47,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _personalListsSubscription?.cancel();
     _publicListsSubscription?.cancel();
-    _personalRestaurantsSubscription?.cancel();
+    _restaurantsSubscriptionInMain?.cancel();
     super.dispose();
   }
 
@@ -134,27 +143,27 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  void setSelectedListID(String? listId) {
-    if (_selectedPersonalListID != listId) {
-      _selectedPersonalListID = listId;
-      _updatePersonalRestaurantsSubscription();
+  void setSelectedListIDInMain(String? listId) {
+    if (_selectedListIDInMain != listId) {
+      _selectedListIDInMain = listId;
+      _updateRestaurantsSubscriptionInMain();
     }
   }
   
-  void _updatePersonalRestaurantsSubscription() {
-    _cancelPersonalRestaurantsSubscription(); // cancel old subscription
-    if (_selectedPersonalListID != null && _user != null) {
-      logger.i('Starting restaurants subscription for listID: $_selectedPersonalListID');
-      _personalRestaurantsSubscription = FirebaseFirestore.instance
+  void _updateRestaurantsSubscriptionInMain() {
+    _cancelRestaurantsSubscriptionInMain(); // cancel old subscription
+    if (_selectedListIDInMain != null && _user != null) {
+      logger.i('Starting restaurants subscription for listID: $_selectedListIDInMain');
+      _restaurantsSubscriptionInMain  = FirebaseFirestore.instance
           .collection(CollectionNames.personalLists)
-          .doc(_selectedPersonalListID)
+          .doc(_selectedListIDInMain)
           .collection(CollectionNames.restaurants)
           .snapshots()
           .listen((snapshot) {
-        _personalRestaurants = snapshot.docs.map((doc) {
+        _restaurantsInMain  = snapshot.docs.map((doc) {
           final data = doc.data();
           return Restaurant(
-            listID: _selectedPersonalListID!,
+            listID: _selectedListIDInMain!,
             restaurantID: doc.id,
             name: data[RestaurantFields.name] as String? ?? '無標題',
             description: data[RestaurantFields.description] as String? ?? '沒有描述',
@@ -168,7 +177,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
             updateTime: data[RestaurantFields.updateTime] as Timestamp?,
           );
         }).toList();
-        logger.i('餐廳數量: ${_personalRestaurants.length}');
+        logger.i('餐廳數量: ${_restaurantsInMain.length}');
         notifyListeners();
       }, onError: (error) {
         logger.w('監聽個人清單裡的餐廳發生錯誤: $error');
@@ -178,10 +187,10 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  void _cancelPersonalRestaurantsSubscription() {
+  void _cancelRestaurantsSubscriptionInMain() {
     logger.i('Cancel restaurants subscription');
-    _personalRestaurantsSubscription?.cancel();
-    _personalRestaurants = [];
+    _restaurantsSubscriptionInMain?.cancel();
+    _restaurantsInMain  = [];
     notifyListeners();
   }
 }
