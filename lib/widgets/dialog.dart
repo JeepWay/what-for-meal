@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/widgets.dart';
+import '../widgets/menu.dart';
 import '../firebase/firebase_service.dart';
 import '../firebase/model.dart';
 import '../utils/geolocation_utils.dart';
@@ -433,12 +434,7 @@ class _AddRestaurantDialogState extends State<AddRestaurantDialog> {
                       labelStyle: theme.textTheme.titleMedium,
                       prefixIcon: const Icon(Icons.restaurant_menu),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: '中式', child: Text('中式')),
-                      DropdownMenuItem(value: '西式', child: Text('西式')),
-                      DropdownMenuItem(value: '日式', child: Text('日式')),
-                      DropdownMenuItem(value: '台式', child: Text('台式')),
-                    ],
+                    items: typeDropdownMenu,
                     onChanged: (value) {
                       setState(() {
                         _selectedType = value;
@@ -460,12 +456,7 @@ class _AddRestaurantDialogState extends State<AddRestaurantDialog> {
                       labelStyle: theme.textTheme.titleMedium,
                       prefixIcon: const Icon(Icons.attach_money),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: '1-99', child: Text('1-99')),
-                      DropdownMenuItem(value: '100-199', child: Text('100-199')),
-                      DropdownMenuItem(value: '200-299', child: Text('200-299')),
-                      DropdownMenuItem(value: '300以上', child: Text('300以上')),
-                    ],
+                    items: priceDropdownMenu,
                     onChanged: (value) {
                       setState(() {
                         _selectedPrice = value;
@@ -1088,12 +1079,7 @@ class _EditRestaurantDialogState extends State<EditRestaurantDialog> {
                       labelStyle: theme.textTheme.titleMedium,
                       prefixIcon: const Icon(Icons.restaurant_menu),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: '中式', child: Text('中式')),
-                      DropdownMenuItem(value: '西式', child: Text('西式')),
-                      DropdownMenuItem(value: '日式', child: Text('日式')),
-                      DropdownMenuItem(value: '台式', child: Text('台式')),
-                    ],
+                    items: typeDropdownMenu,
                     onChanged: (value) {
                       setState(() {
                         _selectedType = value;
@@ -1115,12 +1101,7 @@ class _EditRestaurantDialogState extends State<EditRestaurantDialog> {
                       labelStyle: theme.textTheme.titleMedium,
                       prefixIcon: const Icon(Icons.attach_money),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: '1-99', child: Text('1-99')),
-                      DropdownMenuItem(value: '100-199', child: Text('100-199')),
-                      DropdownMenuItem(value: '200-299', child: Text('200-299')),
-                      DropdownMenuItem(value: '300以上', child: Text('300以上')),
-                    ],
+                    items: priceDropdownMenu,
                     onChanged: (value) {
                       setState(() {
                         _selectedPrice = value;
