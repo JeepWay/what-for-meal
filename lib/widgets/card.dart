@@ -111,7 +111,11 @@ class RestaurantDismissibleCard extends StatelessWidget {
           crossAxisAlignment : CrossAxisAlignment.start,
           children: [
             Text('地址: ${restaurant.address}'),
-            Text('描述: ${restaurant.description}'),
+            Text(
+              '描述: ${restaurant.description}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             const SizedBox(height: 6),
             Wrap(
               spacing: 2,
@@ -151,7 +155,10 @@ class RestaurantDismissibleCard extends StatelessWidget {
         ),
         subtitleTextStyle: theme.textTheme.titleSmall,
         onTap: () {
-          // TODO 點擊餐廳卡片，顯示更多內容、以 Map 開啟、返回餐廳列表等功能
+          showDialog(
+            context: context, 
+            builder: (context) => ShowRestaurantDialog(restaurant: restaurant)
+          );
         },
         onLongPress: () {
           if (fromPersonal) {
