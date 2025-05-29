@@ -1,3 +1,4 @@
+import "dart:math";
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,6 +24,30 @@ class RestaurantsListScreen extends StatefulWidget {
 }
 
 class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
+
+  void randomChooseRestaurant() {
+    final restaurants = Provider.of<AppState>(context, listen: false).restaurantsInMain;
+    if (restaurants.isNotEmpty) {
+      final random = Random();
+      final choice = restaurants[random.nextInt(restaurants.length)];
+      showDialog(
+        context: context, 
+        builder: (context) => ShowRestaurantDialog(restaurant: choice)
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            '餐廳列表為空，沒有可選擇的餐廳，試試看更改篩選條件',
+            textAlign: TextAlign.center,
+          ),
+          duration: Duration(seconds: 3),
+          showCloseIcon: true,
+        ),
+      );
+    }
+  }
+
   List<Widget> _getAppBarActions() {
     if (widget.editable) {
       return <Widget>[
@@ -68,8 +93,7 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
         IconButton( // 隨機選擇
           icon: Icon(Icons.shuffle),
           tooltip: "隨機選擇餐廳",
-          onPressed: () {
-          },
+          onPressed: randomChooseRestaurant,
         ),
         IconButton( // 篩選器
           icon: Icon(Icons.filter_list_alt),
@@ -104,8 +128,7 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
         IconButton( // 隨機選擇
           icon: Icon(Icons.shuffle),
           tooltip: "隨機選擇餐廳",
-          onPressed: () {
-          },
+          onPressed: randomChooseRestaurant,
         ),
         IconButton( // 篩選器
           icon: Icon(Icons.filter_list_alt),
