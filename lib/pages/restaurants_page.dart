@@ -75,6 +75,12 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
           icon: Icon(Icons.filter_list_alt),
           tooltip: "設置篩選條件",
           onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return EditFilterInMainDialog();
+              }
+            );
           },
         ),
       ];
@@ -105,6 +111,12 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
           icon: Icon(Icons.filter_list_alt),
           tooltip: "設置篩選條件",
           onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return EditFilterInMainDialog();
+              }
+            );
           },
         ),
       ];
