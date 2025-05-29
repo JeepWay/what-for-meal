@@ -804,6 +804,101 @@ class DoubleCheckDismissDialog extends StatelessWidget {
   }
 }
 
+class ShowRestaurantDialog extends StatelessWidget {
+  final Restaurant restaurant;
+  const ShowRestaurantDialog({
+    required this.restaurant,
+    super.key
+  });
+
+  void _launchGoogleMap(String name, String address) {
+    final url = 'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent('$name $address')}';
+    launchUrl(Uri.parse(url));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [Text(restaurant.name)],),
+      content: Padding(
+        padding: EdgeInsets.all(8),
+        child: Wrap(
+          spacing: 2,
+          runSpacing: 24,
+          alignment: WrapAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.location_on_sharp),
+                const SizedBox(width: 4,),
+                Flexible(
+                  child: GestureDetector(
+                    onTap: () => _launchGoogleMap(restaurant.name, restaurant.address),
+                    child: Text(
+                      restaurant.address,
+                      softWrap: true,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Icon(Icons.description),
+                const SizedBox(width: 4,),
+                Flexible(
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxHeight: 180,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        restaurant.description,
+                        softWrap: true,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Icon(Icons.restaurant_menu),
+                const SizedBox(width: 4,),
+                Text(restaurant.type)
+              ],
+            ),
+            Row(
+              children: [
+                Icon(Icons.attach_money),
+                const SizedBox(width: 4,),
+                Text(restaurant.price)
+              ],
+            ),
+            Row(
+              children: [
+                Icon(Icons.ac_unit),
+                const SizedBox(width: 4,),
+                Text(restaurant.hasAC ? '有冷氣' : '沒有冷氣')
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('關閉'),
+        ),
+      ],
+      actionsAlignment: MainAxisAlignment.center,
+    );
+  }
+}
+
+
 
 class EditRestaurantDialog extends StatefulWidget {
   const EditRestaurantDialog({
