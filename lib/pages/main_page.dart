@@ -41,7 +41,7 @@ class _MainPageState extends State<MainPage>  with SingleTickerProviderStateMixi
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text(
-                    '點擊清單可查看餐廳列表\n左滑清單可刪除該清單',
+                    '點擊清單可查看餐廳列表\n左滑清單可刪除該清單\n長按清單可編輯該清單名稱',
                     textAlign: TextAlign.center,
                   ),
                   duration: Duration(seconds: 3),
