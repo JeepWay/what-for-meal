@@ -715,7 +715,10 @@ class _EditListDialogState extends State<EditListDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text('編輯清單', style: theme.textTheme.titleLarge),
+      backgroundColor: theme.colorScheme.surface,
+      title: Center(
+        child: Text('編輯清單', style: theme.textTheme.titleLarge)
+      ),
       content: Form(
         key: _formKey,
         child: Column(
@@ -746,13 +749,18 @@ class _EditListDialogState extends State<EditListDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: _updateList,
-          child: const Text('儲存'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            WhiteElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              label: const Text('取消'),
+            ),
+            PrimaryElevatedButton(
+              onPressed: _updateList,
+              label: const Text('儲存'),
+            ),
+          ],
         ),
       ],
     );
