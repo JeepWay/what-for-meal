@@ -155,6 +155,21 @@ class _ExplorePageState extends State<ExplorePage> with WidgetsBindingObserver{
         foregroundColor: theme.colorScheme.onPrimary,
         actions: [
           IconButton(
+            icon: const Icon(Icons.info),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    '1. 在搜尋匡中輸入搜尋半徑 (1~5000 m)\n2. 點擊探索即可看到附近用戶收藏的餐廳',
+                    textAlign: TextAlign.left,
+                  ),
+                  duration: Duration(seconds: 5),
+                  showCloseIcon: true,
+                ),
+              );
+            },
+          ),
+          IconButton(
             tooltip: '重新定位',
             icon: const Icon(Icons.my_location),
             onPressed: _currentPosition,
