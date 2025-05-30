@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 
+import '../states/app_state.dart';
 import '../widgets/widgets.dart';
+import '../widgets/menu.dart';
 import '../firebase/firebase_service.dart';
 import '../firebase/model.dart';
 import '../utils/geolocation_utils.dart';
+import '../logging/logging.dart';
 
 class ResetPasswordDialog extends StatefulWidget {
   const ResetPasswordDialog({super.key});
@@ -433,12 +437,7 @@ class _AddRestaurantDialogState extends State<AddRestaurantDialog> {
                       labelStyle: theme.textTheme.titleMedium,
                       prefixIcon: const Icon(Icons.restaurant_menu),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: '中式', child: Text('中式')),
-                      DropdownMenuItem(value: '西式', child: Text('西式')),
-                      DropdownMenuItem(value: '日式', child: Text('日式')),
-                      DropdownMenuItem(value: '台式', child: Text('台式')),
-                    ],
+                    items: typeDropdownMenu,
                     onChanged: (value) {
                       setState(() {
                         _selectedType = value;
@@ -460,12 +459,7 @@ class _AddRestaurantDialogState extends State<AddRestaurantDialog> {
                       labelStyle: theme.textTheme.titleMedium,
                       prefixIcon: const Icon(Icons.attach_money),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: '1-99', child: Text('1-99')),
-                      DropdownMenuItem(value: '100-199', child: Text('100-199')),
-                      DropdownMenuItem(value: '200-299', child: Text('200-299')),
-                      DropdownMenuItem(value: '300以上', child: Text('300以上')),
-                    ],
+                    items: priceDropdownMenu,
                     onChanged: (value) {
                       setState(() {
                         _selectedPrice = value;
@@ -721,7 +715,10 @@ class _EditListDialogState extends State<EditListDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text('編輯清單', style: theme.textTheme.titleLarge),
+      backgroundColor: theme.colorScheme.surface,
+      title: Center(
+        child: Text('編輯清單', style: theme.textTheme.titleLarge)
+      ),
       content: Form(
         key: _formKey,
         child: Column(
@@ -752,13 +749,18 @@ class _EditListDialogState extends State<EditListDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: _updateList,
-          child: const Text('儲存'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            WhiteElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              label: const Text('取消'),
+            ),
+            PrimaryElevatedButton(
+              onPressed: _updateList,
+              label: const Text('儲存'),
+            ),
+          ],
         ),
       ],
     );
@@ -818,10 +820,13 @@ class ShowRestaurantDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [Text(restaurant.name)],),
+        children: [Text(restaurant.name)],
+      ),
       content: Padding(
         padding: EdgeInsets.all(8),
         child: Wrap(
@@ -832,13 +837,14 @@ class ShowRestaurantDialog extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.location_on_sharp),
-                const SizedBox(width: 4,),
+                const SizedBox(width: 10,),
                 Flexible(
                   child: GestureDetector(
                     onTap: () => _launchGoogleMap(restaurant.name, restaurant.address),
                     child: Text(
                       restaurant.address,
                       softWrap: true,
+                      style: theme.textTheme.titleMedium,
                     ),
                   ),
                 ),
@@ -847,7 +853,7 @@ class ShowRestaurantDialog extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.description),
-                const SizedBox(width: 4,),
+                const SizedBox(width: 10,),
                 Flexible(
                   child: Container(
                     constraints: BoxConstraints(
@@ -857,6 +863,7 @@ class ShowRestaurantDialog extends StatelessWidget {
                       child: Text(
                         restaurant.description,
                         softWrap: true,
+                        style: theme.textTheme.titleMedium,
                       ),
                     ),
                   ),
@@ -866,31 +873,31 @@ class ShowRestaurantDialog extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.restaurant_menu),
-                const SizedBox(width: 4,),
-                Text(restaurant.type)
+                const SizedBox(width: 10,),
+                Text(restaurant.type, style: theme.textTheme.titleMedium)
               ],
             ),
             Row(
               children: [
                 Icon(Icons.attach_money),
-                const SizedBox(width: 4,),
-                Text(restaurant.price)
+                const SizedBox(width: 10,),
+                Text(restaurant.price, style: theme.textTheme.titleMedium)
               ],
             ),
             Row(
               children: [
                 Icon(Icons.ac_unit),
-                const SizedBox(width: 4,),
-                Text(restaurant.hasAC ? '有冷氣' : '沒有冷氣')
+                const SizedBox(width: 10,),
+                Text(restaurant.hasAC ? '有冷氣' : '沒有冷氣', style: theme.textTheme.titleMedium)
               ],
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(
+        PrimaryElevatedButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text('關閉'),
+          label: Text('關閉'),
         ),
       ],
       actionsAlignment: MainAxisAlignment.center,
@@ -1088,12 +1095,7 @@ class _EditRestaurantDialogState extends State<EditRestaurantDialog> {
                       labelStyle: theme.textTheme.titleMedium,
                       prefixIcon: const Icon(Icons.restaurant_menu),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: '中式', child: Text('中式')),
-                      DropdownMenuItem(value: '西式', child: Text('西式')),
-                      DropdownMenuItem(value: '日式', child: Text('日式')),
-                      DropdownMenuItem(value: '台式', child: Text('台式')),
-                    ],
+                    items: typeDropdownMenu,
                     onChanged: (value) {
                       setState(() {
                         _selectedType = value;
@@ -1115,12 +1117,7 @@ class _EditRestaurantDialogState extends State<EditRestaurantDialog> {
                       labelStyle: theme.textTheme.titleMedium,
                       prefixIcon: const Icon(Icons.attach_money),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: '1-99', child: Text('1-99')),
-                      DropdownMenuItem(value: '100-199', child: Text('100-199')),
-                      DropdownMenuItem(value: '200-299', child: Text('200-299')),
-                      DropdownMenuItem(value: '300以上', child: Text('300以上')),
-                    ],
+                    items: priceDropdownMenu,
                     onChanged: (value) {
                       setState(() {
                         _selectedPrice = value;
@@ -1175,3 +1172,149 @@ class _EditRestaurantDialogState extends State<EditRestaurantDialog> {
   }
 }
 
+class EditFilterInMainDialog extends StatefulWidget {
+  const EditFilterInMainDialog({super.key});
+
+  @override
+  State<EditFilterInMainDialog> createState() => _EditFilterInMainDialogState();
+}
+
+class _EditFilterInMainDialogState extends State<EditFilterInMainDialog> {
+  final _formKey = GlobalKey<FormState>();
+
+  String? _selectedType;
+  String? _selectedPrice;
+  bool? _hasAC;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedType = Provider.of<AppState>(context, listen: false).selectedFilterTypeInMain;
+    _selectedPrice = Provider.of<AppState>(context, listen: false).selectedFilterPriceInMain;
+    _hasAC = Provider.of<AppState>(context, listen: false).selectedFilterHasACInMain;
+    logger.d("現在篩選條件: $_selectedType, $_selectedPrice, $_hasAC");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
+      title: Center(
+        child: Text('設定篩選條件', style: theme.textTheme.titleLarge)
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: _selectedType,
+                    decoration: InputDecoration(
+                      labelText: '類型',
+                      labelStyle: theme.textTheme.titleMedium,
+                      prefixIcon: const Icon(Icons.restaurant_menu),
+                    ),
+                    items: [
+                      const DropdownMenuItem(value: null, child: Text('不限制')),
+                      ...typeDropdownMenu,
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedType = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return '請選擇餐廳類型';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 6),
+
+                  DropdownButtonFormField<String>(
+                    value: _selectedPrice,
+                    decoration: InputDecoration(
+                      labelText: '價格範圍',
+                      labelStyle: theme.textTheme.titleMedium,
+                      prefixIcon: const Icon(Icons.attach_money),
+                    ),
+                    items: [
+                      const DropdownMenuItem(value: null, child: Text('不限制')),
+                      ...priceDropdownMenu,
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedPrice = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return '請選擇價格範圍';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 6),
+
+                  DropdownButtonFormField<bool?>(
+                    value: _hasAC,
+                    decoration: InputDecoration(
+                      labelText: '有無冷氣',
+                      labelStyle: theme.textTheme.titleMedium,
+                      prefixIcon: const Icon(Icons.ac_unit),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: null, child: Text('不限制')),
+                      DropdownMenuItem(value: true, child: Text('有冷氣')),
+                      DropdownMenuItem(value: false, child: Text('無冷氣')),
+                    ],
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _hasAC = value; // 允許 null, true, false
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return '請選擇冷氣條件';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            WhiteElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              label: const Text('取消'),
+            ),
+            PrimaryElevatedButton(
+              onPressed: () {
+                Provider.of<AppState>(context, listen: false)
+                  .setFilterInMain(
+                    type: _selectedType,
+                    price: _selectedPrice,
+                    hasAC: _hasAC,
+                  );
+                Navigator.of(context).pop();
+              },
+              label: const Text('確定'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}

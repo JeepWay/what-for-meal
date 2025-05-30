@@ -44,7 +44,7 @@ class ListDismissibleCard extends StatelessWidget{
         subtitleTextStyle: theme.textTheme.titleSmall,
         onTap: () {
           Provider.of<AppState>(context, listen: false)
-            .setSelectedListID(list.listID);
+            .setSelectedListIDInMain(list.listID);
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => RestaurantsListScreen(list: list, editable: fromPersonal),
