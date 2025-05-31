@@ -823,9 +823,8 @@ class ShowRestaurantDialog extends StatelessWidget {
     final theme = Theme.of(context);
     return AlertDialog(
       backgroundColor: theme.colorScheme.surface,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [Text(restaurant.name)],
+      title: Center(
+        child: Text(restaurant.name, style: theme.textTheme.titleLarge)
       ),
       content: Padding(
         padding: EdgeInsets.all(8),
