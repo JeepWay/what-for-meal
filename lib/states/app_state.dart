@@ -118,6 +118,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
       logger.i('Starting public lists subscription for user: ${_user!.uid}');
       _publicListsSubscription = FirebaseFirestore.instance
           .collection(CollectionNames.personalLists)
+          .where(PersonalListFields.userID, isNotEqualTo: _user!.uid) // 在公開清單顯示的時候不顯示使用者本人的
           .where(PersonalListFields.isPublic, isEqualTo: true)
           .snapshots()
           .listen((snapshot) {

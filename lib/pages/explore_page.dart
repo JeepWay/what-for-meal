@@ -231,7 +231,23 @@ class _ExplorePageState extends State<ExplorePage> with WidgetsBindingObserver{
                           restaurant: restaurant, 
                           dismissible: false, 
                           onDismissed: null, 
-                          fromPersonal: false
+                          fromPersonal: false,
+                          onListSelected: (selectedList) async {
+                            final res = await FirebaseService.addNewRestaurant(
+                              listID: selectedList.listID,
+                              name: restaurant.name, 
+                              address: restaurant.address, 
+                              description: restaurant.description, 
+                              type: restaurant.type, 
+                              price: restaurant.price, 
+                              hasAC: restaurant.hasAC
+                            );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(res.success ? '成功新增 ${restaurant.name} 到 ${selectedList.title}' : res.message)),
+                              );
+                            }
+                          },
                         );
                       }).toList(),
                     );
