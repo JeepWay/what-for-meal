@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../firebase/firebase_service.dart';
 import '../states/app_state.dart';
 import '../firebase/model.dart';
 import '../pages/restaurants_page.dart';
@@ -90,12 +91,14 @@ class RestaurantDismissibleCard extends StatelessWidget {
     required this.dismissible,
     required this.onDismissed,
     required this.fromPersonal,
+    required this.onListSelected,
     super.key,
   });
 
   final Restaurant restaurant;
   final bool dismissible;
   final Function? onDismissed;
+  final Function? onListSelected;
   final bool fromPersonal;  // decide editable
 
   @override
@@ -105,7 +108,31 @@ class RestaurantDismissibleCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       child: ListTile(
         leading: Icon(Icons.storefront_outlined),
-        title: Text(restaurant.name),
+        title: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 25),
+              child: Text(restaurant.name, overflow: TextOverflow.ellipsis,)
+            ),
+            if (!fromPersonal) // 不是在我的清單中的餐廳才顯示
+              Positioned(
+                right: -10,
+                top: -12,
+                child: IconButton(
+                  icon: Icon(Icons.favorite_rounded),
+                  tooltip: '收藏到清單',
+                  onPressed:() {
+                    showDialog(
+                      context: context,
+                      builder: (context) => SelectListDialog(
+                        onListSelected: onListSelected
+                      )
+                    );
+                  },
+                ),
+              )
+          ],
+        ),
         titleTextStyle: theme.textTheme.titleLarge,
         subtitle: Column(
           crossAxisAlignment : CrossAxisAlignment.start,

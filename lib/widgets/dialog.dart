@@ -1318,3 +1318,58 @@ class _EditFilterInMainDialogState extends State<EditFilterInMainDialog> {
     );
   }
 }
+
+/// 收藏餐廳功能：顯示要把餐廳加到哪個清單中
+class SelectListDialog extends StatefulWidget {
+  const SelectListDialog({super.key, required this.onListSelected});
+  final Function? onListSelected;
+  
+  @override
+  State<SelectListDialog> createState() => _SelectListDialogState();
+}
+
+class _SelectListDialogState extends State<SelectListDialog> {
+  late final List<PersonalList> personalLists;
+
+  @override
+  void initState() {
+    personalLists =  Provider.of<AppState>(context, listen: false).personalLists;
+    super.initState();
+  }
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
+      title: Center(child: Text('選擇要加入的清單', style: theme.textTheme.titleLarge)),
+      content: SizedBox(
+        width: double.minPositive,
+        child: personalLists.isEmpty
+            ? const Text('尚未建立任何清單', textAlign: TextAlign.center,)
+            : ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: personalLists.length,
+                itemBuilder: (context, index) {
+                  final list = personalLists[index];
+                  return ListTile(
+                    leading: Icon(Icons.list_alt),
+                    title: Text(list.title),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      widget.onListSelected!.call(list);
+                    },
+                  );
+                },
+              ),
+      ),
+      actions: [
+        PrimaryElevatedButton(
+          onPressed: () => Navigator.of(context).pop(),
+          label: Text('關閉'),
+        ),
+      ],
+      actionsAlignment: MainAxisAlignment.center
+    );
+  }
+}
