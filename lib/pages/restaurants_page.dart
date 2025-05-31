@@ -1,5 +1,7 @@
 import "dart:math";
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:provider/provider.dart';
 
 import '../states/app_state.dart';
@@ -27,14 +29,7 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
 
   void randomChooseRestaurant() {
     final restaurants = Provider.of<AppState>(context, listen: false).restaurantsInMain;
-    if (restaurants.isNotEmpty) {
-      final random = Random();
-      final choice = restaurants[random.nextInt(restaurants.length)];
-      showDialog(
-        context: context, 
-        builder: (context) => ShowRestaurantDialog(restaurant: choice)
-      );
-    } else {
+    if (restaurants.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -45,7 +40,58 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
           showCloseIcon: true,
         ),
       );
+      return;
     }
+
+    // 創建 StreamController 來控制轉盤選擇
+    final StreamController<int> controller = StreamController<int>();
+    final random = Random();
+    final selectedIndex = random.nextInt(restaurants.length);
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
+        title: Center(
+          child: const Text('隨機選擇餐廳')
+        ),
+        content: SizedBox(
+          height: 300,
+          width: 300,
+          child: FortuneWheel(
+            selected: controller.stream, // 綁定 Stream 控制選中項
+            items: restaurants.asMap().entries
+                .map((entry) => FortuneItem(
+                      child: Text(entry.value.name,
+                        style: theme.textTheme.labelLarge!.copyWith(
+                          color: theme.colorScheme.onSecondary,
+                        )
+                      ),
+                      style: FortuneItemStyle(
+                        color: theme.colorScheme.secondaryContainer, // 切片背景色
+                        borderColor: Colors.white, // 邊框色
+                        borderWidth: 2, // 邊框寬度
+                      ),
+                    ))
+                .toList(),
+            rotationCount: 10, // 旋轉圈數，增加動畫效果
+            duration: const Duration(seconds: 5), // 動畫持續時間
+            onAnimationEnd: () {
+              Navigator.of(context).pop();
+              showDialog(
+                context: context,
+                builder: (context) => ShowRestaurantDialog(
+                  restaurant: restaurants[selectedIndex],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    ).then((_) {
+      controller.close();
+    });
   }
 
   List<Widget> _getAppBarActions() {
