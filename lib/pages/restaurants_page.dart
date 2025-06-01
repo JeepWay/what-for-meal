@@ -47,6 +47,7 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
     final StreamController<int> controller = StreamController<int>();
     final random = Random();
     final selectedIndex = random.nextInt(restaurants.length);
+    controller.add(selectedIndex);
     final theme = Theme.of(context);
 
     showDialog(
