@@ -175,6 +175,7 @@ class FirebaseService {
     }
     return response;
   }
+
   /// 寄送密碼重設郵件
   static Future<ResetPasswordWithEmailResponse> resetPasswordWithEmail({
     required String email
@@ -182,6 +183,17 @@ class FirebaseService {
     final response = ResetPasswordWithEmailResponse(success: false, message: '');
 
     try {
+      QuerySnapshot userDoc = await FirebaseFirestore.instance
+        .collection(CollectionNames.users)
+        .where(UserFileds.email, isEqualTo: email)
+        .get();
+
+      if (userDoc.docs.isEmpty) {
+        response.message = '此電子郵件尚未註冊';
+        logger.w(response.message);
+        return response;
+      }
+
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       response.success = true;
       response.message = '已發送密碼重置郵件，請檢查您的電子郵件';
