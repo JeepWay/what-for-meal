@@ -91,15 +91,23 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
           .where(PersonalListFields.userID, isEqualTo: _user!.uid)
           .snapshots()
           .listen((snapshot) {
-        _personalLists = snapshot.docs.map((doc) => PersonalList(
-          listID: doc.id ,
-          title: doc.data()[PersonalListFields.title] as String? ?? '無標題',
-          userID: doc.data()[PersonalListFields.userID] as String? ?? '用戶ID未知',
-          userName: doc.data()[PersonalListFields.userName] as String? ?? '未知用戶',
-          isPublic: doc.data()[PersonalListFields.isPublic] as bool? ?? false,
-          creatTime: doc.data()[PersonalListFields.creatTime] as Timestamp?,
-          updateTime: doc.data()[PersonalListFields.updateTime] as Timestamp?,
-        )).toList();
+        _personalLists = snapshot.docs.map((doc) {
+          final shareWithData = doc.data()[PersonalListFields.shareWith];
+          List<String>? shareWithList;
+          if (shareWithData != null && shareWithData is List) {
+            shareWithList = shareWithData.cast<String>().toList();
+          }
+          return PersonalList(
+            listID: doc.id ,
+            title: doc.data()[PersonalListFields.title] as String? ?? '無標題',
+            userID: doc.data()[PersonalListFields.userID] as String? ?? '用戶ID未知',
+            userName: doc.data()[PersonalListFields.userName] as String? ?? '未知用戶',
+            isPublic: doc.data()[PersonalListFields.isPublic] as bool? ?? false,
+            creatTime: doc.data()[PersonalListFields.creatTime] as Timestamp?,
+            updateTime: doc.data()[PersonalListFields.updateTime] as Timestamp?,
+            shareWith: shareWithList,
+          );
+        }).toList();
         logger.i('personalLists: ${_personalLists.map((list) => list.toString()).toList()}');
         notifyListeners(); 
       }, onError: (error) {
@@ -122,15 +130,23 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
           .where(PersonalListFields.isPublic, isEqualTo: true)
           .snapshots()
           .listen((snapshot) {
-        _publicLists = snapshot.docs.map((doc) => PersonalList(
-          listID: doc.id ,
-          title: doc.data()[PersonalListFields.title] as String? ?? '無標題',
-          userID: doc.data()[PersonalListFields.userID] as String? ?? '用戶ID未知',
-          userName: doc.data()[PersonalListFields.userName] as String? ?? '未知用戶',
-          isPublic: doc.data()[PersonalListFields.isPublic] as bool? ?? false,
-          creatTime: doc.data()[PersonalListFields.creatTime] as Timestamp?,
-          updateTime: doc.data()[PersonalListFields.updateTime] as Timestamp?,
-        )).toList();
+        _publicLists = snapshot.docs.map((doc) {
+          final shareWithData = doc.data()[PersonalListFields.shareWith];
+          List<String>? shareWithList;
+          if (shareWithData != null && shareWithData is List) {
+            shareWithList = shareWithData.cast<String>().toList();
+          }
+          return PersonalList(
+            listID: doc.id ,
+            title: doc.data()[PersonalListFields.title] as String? ?? '無標題',
+            userID: doc.data()[PersonalListFields.userID] as String? ?? '用戶ID未知',
+            userName: doc.data()[PersonalListFields.userName] as String? ?? '未知用戶',
+            isPublic: doc.data()[PersonalListFields.isPublic] as bool? ?? false,
+            creatTime: doc.data()[PersonalListFields.creatTime] as Timestamp?,
+            updateTime: doc.data()[PersonalListFields.updateTime] as Timestamp?,
+            shareWith: shareWithList,
+          );
+        }).toList();
         logger.i('publicLists: ${_publicLists.map((list) => list.toString()).toList()}');
         notifyListeners();
       }, onError: (error) {
