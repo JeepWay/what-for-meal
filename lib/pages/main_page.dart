@@ -19,7 +19,7 @@ class _MainPageState extends State<MainPage>  with SingleTickerProviderStateMixi
   @override
   void initState(){
     super.initState();
-    _tabCtrl = TabController(length: 2, vsync: this);
+    _tabCtrl = TabController(length: 3, vsync: this);
     _tabCtrl.addListener(() {
       setState(() {}); // re-construct appBar on click
     });
@@ -62,7 +62,25 @@ class _MainPageState extends State<MainPage>  with SingleTickerProviderStateMixi
             },
           ),
         ];
-      case 1: // public lists
+      case 1: // shared lists
+        return <Widget>[
+          IconButton(
+            icon: const Icon(Icons.info),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    '點擊清單可查看餐廳列表',
+                    textAlign: TextAlign.center,
+                  ),
+                  duration: Duration(seconds: 3),
+                  showCloseIcon: true,
+                ),
+              );
+            },
+          ),
+        ];
+      case 2: // public lists
         return <Widget>[
           IconButton(
             icon: const Icon(Icons.info),
@@ -100,7 +118,7 @@ class _MainPageState extends State<MainPage>  with SingleTickerProviderStateMixi
             color: theme.colorScheme.secondary,
             child: TabBar(
               controller: _tabCtrl,
-              tabs: const [Tab(text: '我的清單'), Tab(text: '公開清單')],
+              tabs: const [Tab(text: '我的清單'), Tab(text: '共享清單'), Tab(text: '公開清單')],
               labelColor: theme.colorScheme.primary,
               unselectedLabelColor: theme.colorScheme.onSurface,
               indicatorColor: theme.colorScheme.onPrimary,
@@ -152,6 +170,30 @@ class _MainPageState extends State<MainPage>  with SingleTickerProviderStateMixi
                       },
                       fromPersonal: true,
                     ),
+                  );
+                },
+              );
+            }
+          ),
+          /// shared lists
+          Consumer<AppState>(
+            builder: (context, appState, child) {
+              final sharedLists = appState.sharedLists;
+              if (sharedLists.isEmpty) {
+                return Center(
+                  child: Text('尚未有其他人與你共享清單', style: theme.textTheme.titleLarge,)
+                );
+              }
+              return ListView.builder(
+                padding: const EdgeInsets.all(14),
+                itemCount: sharedLists.length,
+                itemBuilder: (context, index) {
+                  final list = sharedLists[index];
+                  return ListDismissibleCard(
+                    list: list,
+                    dismissible: false,
+                    onDismissed: null,
+                    fromPersonal: true,
                   );
                 },
               );

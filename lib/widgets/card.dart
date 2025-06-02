@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../firebase/firebase_service.dart';
 import '../states/app_state.dart';
 import '../firebase/model.dart';
 import '../pages/restaurants_page.dart';
