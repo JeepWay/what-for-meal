@@ -96,6 +96,7 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
   }
 
   List<Widget> _getAppBarActions() {
+    final theme = Theme.of(context);
     if (widget.editable) {
       return <Widget>[
         IconButton(
@@ -113,35 +114,6 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
             );
           },
         ),
-        IconButton(   // 新增餐廳
-          icon: Icon(Icons.add_box),
-          tooltip: "新增餐廳",
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AddRestaurantDialog(listID: widget.list.listID);
-              }
-            );
-          },
-        ),
-        IconButton( // 公開清單
-          icon: Icon(Icons.public),
-          tooltip: "公開清單",
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return PublicizePersonalListDialog(list: widget.list);
-              }
-            );
-          },
-        ),
-        IconButton( // 隨機選擇
-          icon: Icon(Icons.shuffle),
-          tooltip: "隨機選擇餐廳",
-          onPressed: randomChooseRestaurant,
-        ),
         IconButton( // 篩選器
           icon: Icon(Icons.filter_list_alt),
           tooltip: "設置篩選條件",
@@ -153,6 +125,48 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
               }
             );
           },
+        ),
+        IconButton( // 隨機選擇
+          icon: Icon(Icons.shuffle),
+          tooltip: "隨機選擇餐廳",
+          onPressed: randomChooseRestaurant,
+        ),
+        PopupMenuButton<String>(
+          color: theme.colorScheme.secondary,
+          position: PopupMenuPosition.under,
+          onSelected: (String value) {
+            if (value == 'add_restaurant') {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AddRestaurantDialog(listID: widget.list.listID);
+                }
+              );
+            } else if (value == 'publicize') {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return PublicizePersonalListDialog(list: widget.list);
+                },
+              );
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            const PopupMenuItem<String>(
+              value: 'add_restaurant',
+              child: ListTile(
+                leading: Icon(Icons.add_box),
+                title: Text('新增餐廳'),
+              ),
+            ),
+            const PopupMenuItem<String>(
+              value: 'publicize',
+              child: ListTile(
+                leading: Icon(Icons.public),
+                title: Text('公開清單'),
+              ),
+            ),
+          ],
         ),
       ];
     } else {
@@ -172,11 +186,6 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
             );
           },
         ),
-        IconButton( // 隨機選擇
-          icon: Icon(Icons.shuffle),
-          tooltip: "隨機選擇餐廳",
-          onPressed: randomChooseRestaurant,
-        ),
         IconButton( // 篩選器
           icon: Icon(Icons.filter_list_alt),
           tooltip: "設置篩選條件",
@@ -188,6 +197,11 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
               }
             );
           },
+        ),
+        IconButton( // 隨機選擇
+          icon: Icon(Icons.shuffle),
+          tooltip: "隨機選擇餐廳",
+          onPressed: randomChooseRestaurant,
         ),
       ];
     }
