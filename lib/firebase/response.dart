@@ -94,3 +94,10 @@ class UpdateRestaurantResponse {
   String message;
   DocumentReference? doc;
 }
+
+class EventResponse {
+  EventResponse({required this.message, required this.success});
+
+  bool success;
+  String message;
+}

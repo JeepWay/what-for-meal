@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:intl/intl.dart';
+import 'constants.dart';
 
 class PersonalList {
   PersonalList({
@@ -69,5 +70,47 @@ class Restaurant {
           'address: $address, geoHash: $geoHash, latitude: ${location.latitude}, longitude: ${location.longitude}, '
           'type: $type, price: $price, hasAC: $hasAC, '
           'creatTime: ${creatTimeAsDate ?? '未知'}, updateTime: ${updateTimeAsDate ?? '未知'})';
+  }
+}
+
+class Event {
+  final String id;
+  final String title;
+  final String goal;
+  final String description;
+  final Timestamp dateTime;
+  final int numberOfPeople;
+  final String restoName;
+  final String address;
+  final List<String> participants;
+  final List<String> participantNames;
+
+  Event({
+    required this.id,
+    required this.title,
+    required this.goal,
+    required this.description,
+    required this.dateTime,
+    required this.numberOfPeople,
+    required this.restoName,
+    required this.address,
+    required this.participants,
+    required this.participantNames,
+  });
+
+  String get formattedDate => DateFormat('yyyy-MM-dd').format(dateTime.toDate());
+  String get formattedTime => DateFormat('HH:mm').format(dateTime.toDate());
+  
+  Map<String, dynamic> toMap() {
+    return {
+      EventFields.title: title,
+      EventFields.goal: goal,
+      EventFields.description: description,
+      EventFields.dateTime: dateTime,
+      EventFields.numberOfPeople: numberOfPeople,
+      EventFields.restoName: restoName,
+      EventFields.address: address,
+      EventFields.participants: participants,
+    };
   }
 }

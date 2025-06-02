@@ -218,7 +218,7 @@ class _ExplorePageState extends State<ExplorePage> with WidgetsBindingObserver{
               // 顯示推薦的餐廳
               Expanded(
                 child: ListView(
-                  padding: EdgeInsets.zero,
+                  padding: const EdgeInsets.all(14),
                   children: _randomRecommend(_restaurants)
                       .entries
                       .map((entry) {

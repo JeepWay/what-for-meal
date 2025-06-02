@@ -43,10 +43,12 @@ class EventFields {
   static const String goal = 'goal';
   static const String description = 'description';
   static const String numberOfPeople = 'numberOfPeople';
-  static const String time = 'time';
+  static const String dateTime = 'dateTime';
+  static const String restoName = 'restoName';
   static const String address = 'address';
   static const String geoHash = 'geoHash';
   static const String location = 'location';
   static const String participants = 'participants';
+  static const String participantNames = 'participantNames';
 }
 
