@@ -637,6 +637,175 @@ class FirebaseService {
     return response;
   }
 
+  /// 透過 listID，獲取該清單的共享使用者資訊
+  static Future<GetSharedUsersResponse> getSharedUser({
+    required String listID,
+  }) async {
+    final response = GetSharedUsersResponse(success: false, message: '');
+    response.usersList = [];
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法新增共享使用者';
+      return response;
+    }
+
+    try {
+      DocumentSnapshot listDoc = await FirebaseFirestore.instance
+        .collection(CollectionNames.personalLists)
+        .doc(listID)
+        .get();
+
+      if (!listDoc.exists) {
+        response.message = '找不到指定的清單';
+        return response;
+      }
+
+      final shareWithData = listDoc.data() as Map<String, dynamic>?;
+      List<String> shareWithList = List<String>.from(shareWithData?[PersonalListFields.shareWith] ?? []);
+
+      List<Map<String, dynamic>> usersList = [];
+      for (String userId in shareWithList) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection(CollectionNames.users)
+          .doc(userId)
+          .get();
+
+        if (userDoc.exists) {
+          usersList.add({
+            PersonalListFields.userID: userId,
+            UserFileds.email: userDoc[UserFileds.email] ?? '未知',
+            UserFileds.userName: userDoc[UserFileds.userName] ?? '未知',
+          });
+        }
+      }
+      response.success = true;
+      response.message = '成功獲取共享使用者資訊';
+      response.usersList = usersList;
+
+    } catch(e) {
+      logger.w('Get shared user failed.\nUnknown error $e');
+      response.message = '獲取共享使用者失敗：$e';
+    }
+    return response;
+  }
+
+  /// 透過 email，新增個人清單裡的共享使用者
+  static Future<AddSharedUserByEmailResponse> addSharedUserByEmail({
+    required String listID,
+    required String email,
+  }) async {
+    final response = AddSharedUserByEmailResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法新增共享使用者';
+      return response;
+    }
+
+    try {
+      QuerySnapshot queryUser = await FirebaseFirestore.instance
+        .collection(CollectionNames.users)
+        .where(UserFileds.email, isEqualTo: email)
+        .get();
+
+      if (queryUser.docs.isEmpty) {
+        response.message = '找不到使用此電子郵件的使用者';
+        return response;
+      }
+
+      if (queryUser.docs.length > 1) {
+        response.message = '找到多個使用該電子郵件的使用者，請聯繫開發團隊';
+        return response;
+      }
+
+      DocumentSnapshot userDoc = queryUser.docs.first;
+      String userId = userDoc.id;
+
+      DocumentReference listRef = FirebaseFirestore.instance
+        .collection(CollectionNames.personalLists)
+        .doc(listID);
+
+      DocumentSnapshot listDoc = await listRef.get();
+
+      if (!listDoc.exists) {
+        response.message = '找不到指定的清單';
+        return response;
+      }
+
+      final shareWithData = listDoc.data() as Map<String, dynamic>?;
+      List<String> shareWithList = List<String>.from(shareWithData?[PersonalListFields.shareWith] ?? []);
+
+      if (shareWithList.contains(userId)) {
+        response.message = '此使用者已在共享列表中';
+        return response;
+      }
+
+      await listRef.update({
+        PersonalListFields.shareWith: FieldValue.arrayUnion([userId]),
+      });
+
+      logger.i('Add shared user: $email successfully from list: $listID');
+      response.success = true;
+      response.message = '成功新增共享使用者';
+
+    } catch (e) {
+      logger.w('Add shared user failed.\nUnknown error $e');
+      response.message = '新增共享使用者失敗：$e';
+    }
+    return response;
+  }
+
+  /// 從個人清單中移除共享使用者
+  static Future<RemoveSharedUserByEmailResponse> removeSharedUser({
+    required String listID,
+    required String userID,
+  }) async {
+    final response = RemoveSharedUserByEmailResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法移除共享使用者';
+      return response;
+    }
+
+    try {
+      DocumentSnapshot listDoc = await FirebaseFirestore.instance
+        .collection(CollectionNames.personalLists)
+        .doc(listID)
+        .get();
+
+      if (!listDoc.exists) {
+        response.message = '找不到指定的清單';
+        return response;
+      }
+
+      final shareWithData = listDoc.data() as Map<String, dynamic>?;
+      List<String> shareWithList = List<String>.from(shareWithData?[PersonalListFields.shareWith] ?? []);
+
+      if (!shareWithList.contains(userID)) {
+        response.message = '此使用者不在共享列表中';
+        return response;
+      }
+
+      await FirebaseFirestore.instance
+          .collection(CollectionNames.personalLists)
+          .doc(listID)
+          .update({
+        PersonalListFields.shareWith: FieldValue.arrayRemove([userID]),
+      });
+
+      logger.i('Remove shared user: $userID successfully from list: $listID');
+      response.success = true;
+      response.message = '成功移除共享使用者';
+
+    } catch (e) {
+      logger.w('Remove shared user failed.\nUnknown error $e');
+      response.message = '移除共享使用者失敗：$e';
+    }
+    return response;
+  }
+
   /// 以食會友：創建活動功能
   static Future<EventResponse> addNewEvent(Event e) async {
     var response = EventResponse(success: false, message: '');

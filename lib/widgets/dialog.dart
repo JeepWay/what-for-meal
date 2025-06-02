@@ -7,6 +7,7 @@ import '../widgets/widgets.dart';
 import '../widgets/menu.dart';
 import '../firebase/firebase_service.dart';
 import '../firebase/model.dart';
+import '../firebase/constants.dart';
 import '../utils/geolocation_utils.dart';
 import '../logging/logging.dart';
 
@@ -1373,6 +1374,204 @@ class _SelectListDialogState extends State<SelectListDialog> {
   }
 }
 
+class SetShareWithUsersDialog extends StatefulWidget {
+  const SetShareWithUsersDialog({
+    required this.list,
+    super.key,
+  });
+
+  final PersonalList list;
+
+  @override
+  State<SetShareWithUsersDialog> createState() => _SetShareWithUsersDialogState();
+}
+
+class _SetShareWithUsersDialogState extends State<SetShareWithUsersDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  List<Map<String, dynamic>> _sharedUsers = [];
+
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSharedUsers();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  bool _isValidEmail(String email) {
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegExp.hasMatch(email);
+  }
+
+  Future<void> _loadSharedUsers() async {
+    final response = await FirebaseService.getSharedUser(
+      listID: widget.list.listID,
+    );
+
+    setState(() {
+      _sharedUsers = response.usersList!;
+    });
+  }
+
+  Future<void> _addSharedUserByEmail() async {
+    setState(() {
+      _errorMessage = '';
+    });
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final response = await FirebaseService.addSharedUserByEmail(
+      listID: widget.list.listID,
+      email: _emailController.text.trim(),
+    );
+
+    setState(() {
+      if (response.success) {
+        _emailController.clear();
+        _loadSharedUsers();
+      } else {
+        _errorMessage = response.message;
+        _loadSharedUsers();
+      }
+    });
+  }
+
+  Future<void> _removeSharedUserByID(String userID) async {
+    setState(() {
+      _errorMessage = '';
+    });
+
+    final response = await FirebaseService.removeSharedUser(
+      listID: widget.list.listID,
+      userID: userID,
+    );
+
+    setState(() {
+      if (response.success) {
+        _loadSharedUsers();
+      } else {
+        _errorMessage = response.message;
+        _loadSharedUsers();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
+      title: Center(
+        child: Text('設定共享使用者', style: theme.textTheme.titleLarge)
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('請輸入欲共享的使用者的電子郵件', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 6),
+
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: Form(
+                    key: _formKey,
+                    child: TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: '電子郵件',
+                        labelStyle: Theme.of(context).textTheme.titleMedium,
+                        prefixIcon: const Icon(Icons.email),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '請輸入電子郵件';
+                        }
+                        if (!_isValidEmail(value)) {
+                          return '請輸入有效的電子郵件地址';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 5),
+                PrimaryElevatedButton(
+                  onPressed: _addSharedUserByEmail,
+                  label: const Text('新增'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+      
+            if (_errorMessage.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Text(
+                _errorMessage,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ],
+            const SizedBox(height: 20),
+      
+            Center(
+              child: Text('目前已共享的使用者：', style: theme.textTheme.titleMedium)
+            ),
+            const SizedBox(height: 10),
+
+            if (_sharedUsers.isEmpty)
+              const Text('尚未共享給任何使用者')
+            else ...[
+              Container(
+                color: theme.colorScheme.secondary,
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height * 0.3,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _sharedUsers.length,
+                  itemBuilder: (context, index) {
+                    final user = _sharedUsers[index];
+                    return ListTile(
+                      leading: Icon(Icons.person),
+                      title: Text(user[UserFileds.userName]),
+                      subtitle: Text(user[UserFileds.email]),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete, color: theme.colorScheme.error),
+                        onPressed: () => {
+                          _removeSharedUserByID(
+                            user[PersonalListFields.userID],
+                          ),
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        PrimaryElevatedButton(
+          onPressed: () => Navigator.of(context).pop(),
+          label: const Text('關閉'),
+        ),
+      ],
+      actionsAlignment: MainAxisAlignment.center,
+    );
+  }
+}
 /// 顯示活動的 detail
 class EventDetailDialog extends StatelessWidget {
   const EventDetailDialog({super.key, required this.event});

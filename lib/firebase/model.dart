@@ -11,6 +11,7 @@ class PersonalList {
     required this.isPublic,
     this.creatTime,
     this.updateTime,
+    this.shareWith,
   });
 
   final String listID;
@@ -20,6 +21,7 @@ class PersonalList {
   final bool isPublic;
   final Timestamp? creatTime;
   final Timestamp? updateTime;
+  final List<String>? shareWith;
 
   DateTime? get creatTimeAsDate => creatTime?.toDate();
   DateTime? get updateTimeAsDate => updateTime?.toDate();
@@ -28,7 +30,7 @@ class PersonalList {
   String toString() {
     return 'PersonalList(listID: $listID, title: $title, userID: $userID, '
           'userName: $userName, isPublic: $isPublic, creatTime: ${creatTimeAsDate ?? '未知'}, '
-          'updateTime: ${updateTimeAsDate ?? '未知'})';
+          'updateTime: ${updateTimeAsDate ?? '未知'}, shareWith: $shareWith))';
   }
 }
 

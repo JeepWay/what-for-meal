@@ -23,6 +23,7 @@ class PersonalListFields {
   static const String isPublic = 'isPublic';
   static const String creatTime = 'creatTime';
   static const String updateTime = 'updateTime';
+  static const String shareWith = 'shareWith';
 }
 
 class RestaurantFields {

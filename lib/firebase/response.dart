@@ -95,6 +95,28 @@ class UpdateRestaurantResponse {
   DocumentReference? doc;
 }
 
+class GetSharedUsersResponse {
+  GetSharedUsersResponse({required this.success, required this.message});
+
+  bool success;
+  String message;
+  List<Map<String, dynamic>>? usersList;
+}
+
+class AddSharedUserByEmailResponse {
+  AddSharedUserByEmailResponse({required this.success, required this.message});
+
+  bool success;
+  String message;
+}
+
+class RemoveSharedUserByEmailResponse {
+  RemoveSharedUserByEmailResponse({required this.success, required this.message});
+
+  bool success;
+  String message;
+}
+
 class EventResponse {
   EventResponse({required this.message, required this.success});
 
