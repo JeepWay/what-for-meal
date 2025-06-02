@@ -149,6 +149,13 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
                   return PublicizePersonalListDialog(list: widget.list);
                 },
               );
+            } else if (value == 'share') {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return SetShareWithUsersDialog(list: widget.list);
+                }
+              );
             }
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -164,6 +171,13 @@ class _RestaurantsListScreenState extends State<RestaurantsListScreen> {
               child: ListTile(
                 leading: Icon(Icons.public),
                 title: Text('公開清單'),
+              ),
+            ),
+            const PopupMenuItem<String>(
+              value: 'share',
+              child: ListTile(
+                leading: Icon(Icons.share),
+                title: Text('編輯共享用戶'),
               ),
             ),
           ],
