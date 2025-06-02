@@ -24,7 +24,7 @@ Future<Map<String, dynamic>> convertAddressToGeohash(String address) async {
     // turn into geohash
     final geoHasher = GeoHasher();
     // precision can be larger ?
-    final hash = geoHasher.encode(lon, lat, precision: 9);
+    final hash = geoHasher.encode(lon, lat, precision: 5);
 
     return {
       'latitude': lat,

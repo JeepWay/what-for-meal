@@ -70,7 +70,7 @@ class ListDismissibleCard extends StatelessWidget{
           final result = await showDialog<bool>(
             context: context,
             builder: (context) {
-              return DoubleCheckDismissDialog();
+              return DoubleCheckDismissDialog(displayText: '確定要刪除這個清單嗎？',);
             },
           );
           logger.d('Confirm result for dismiss list: $result');
@@ -216,7 +216,7 @@ class RestaurantDismissibleCard extends StatelessWidget {
           final result = await showDialog<bool>(
             context: context,
             builder: (context) {
-              return DoubleCheckDismissDialog();
+              return DoubleCheckDismissDialog(displayText: '確定要刪除這個餐廳嗎？',);
             },
           );
           logger.d('Confirm result for dismiss restaurant: $result');
@@ -228,3 +228,111 @@ class RestaurantDismissibleCard extends StatelessWidget {
     }
   }
 }
+
+class EventCard extends StatelessWidget {
+  const EventCard({
+    required this.isCreator,
+    required this.event,
+    required this.onDismissed,
+    required this.onEdit,
+    required this.onCancel,
+    required this.onPlusOne,
+    super.key,
+  });
+
+  final Event event;
+  final bool isCreator;
+  final Function? onDismissed;
+  final Function? onEdit;
+  final Function? onCancel;
+  final Function? onPlusOne;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final card = Card(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      clipBehavior: Clip.hardEdge,
+      child: ListTile(
+        leading: Icon(Icons.event_available_rounded),
+        title: Text(event.title),
+        titleTextStyle: theme.textTheme.titleLarge,
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          // 發起者可編輯活動, 參加者可取消參加
+          // 在以食會友畫面顯示 +1
+          children: [
+            if(onPlusOne != null)
+              IconButton(
+                icon: const Icon(Icons.exposure_plus_1),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: '參加活動',
+                onPressed: () => onPlusOne!(),
+              ),
+            if (isCreator && onEdit != null)
+              IconButton(
+                icon: const Icon(Icons.edit),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: '編輯',
+                onPressed: () => onEdit!(),
+              ),
+            if (!isCreator && onCancel != null)
+            IconButton(
+              icon: const Icon(Icons.exposure_minus_1),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              tooltip: '取消參加',
+              onPressed: () => onCancel!(),
+            ),
+          ],
+        ),
+        subtitle: Column(
+          crossAxisAlignment : CrossAxisAlignment.start,
+          children: [
+            Text('時間: ${event.formattedDate} ${event.formattedTime}'),
+            Text('地址: ${event.address}'),
+            const SizedBox(height: 6),
+          ],
+        ),
+        // 按一下顯示活動細節
+        subtitleTextStyle: theme.textTheme.titleSmall,
+        onTap: () {
+          showDialog<Event>(
+            context: context,
+            builder: (_) => EventDetailDialog(event: event),
+          );
+        },
+      ),
+    );
+    // 發起者可刪除活動
+    if (!isCreator) {
+      return card;
+    } else {
+      return Dismissible(
+        key: Key(event.id),
+        direction: DismissDirection.endToStart,
+        background: Container(  // for delete animation
+          color: theme.colorScheme.error,
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Icon(Icons.delete, color: theme.colorScheme.onError),
+        ),
+        confirmDismiss: (direction) async {
+          final result = await showDialog<bool>(
+            context: context,
+            builder: (context) {
+              return DoubleCheckDismissDialog(displayText: '確定要刪除活動「${event.title}」嗎？');
+            },
+          );
+          logger.d('Confirm result for dismiss event: $result');
+          return result ?? false;
+        },
+        onDismissed: (direction) => onDismissed!(),
+        child: card,
+      );
+    }
+  }
+}
+

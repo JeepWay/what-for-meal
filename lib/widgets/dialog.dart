@@ -767,10 +767,10 @@ class _EditListDialogState extends State<EditListDialog> {
     );
   }
 }
-
-
 class DoubleCheckDismissDialog extends StatelessWidget {
-  const DoubleCheckDismissDialog({super.key});
+  const DoubleCheckDismissDialog({super.key, required this.displayText, this.titleText = '確認刪除'});
+  final String titleText;
+  final String displayText;
 
   @override
   Widget build(BuildContext context) {
@@ -778,12 +778,12 @@ class DoubleCheckDismissDialog extends StatelessWidget {
     return AlertDialog(
       backgroundColor: theme.colorScheme.surface,
       title: Center(
-        child: Text('確認刪除', style: theme.textTheme.titleLarge)
+        child: Text(titleText, style: theme.textTheme.titleLarge)
       ),
       content: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text(
-          '確定要刪除這個清單/餐廳嗎？', 
+          displayText,
           style: theme.textTheme.titleMedium,
           textAlign: TextAlign.center,
         ),
@@ -1569,6 +1569,131 @@ class _SetShareWithUsersDialogState extends State<SetShareWithUsersDialog> {
         ),
       ],
       actionsAlignment: MainAxisAlignment.center,
+    );
+  }
+}
+/// 顯示活動的 detail
+class EventDetailDialog extends StatelessWidget {
+  const EventDetailDialog({super.key, required this.event});
+  final Event event;
+
+  void _launchGoogleMap(String name, String address) {
+    final url = 'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent('$name $address')}';
+    launchUrl(Uri.parse(url));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AlertDialog(
+      backgroundColor: theme.colorScheme.surface,
+      title: Row(
+        children: [
+          Icon(Icons.event, color: theme.colorScheme.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              event.title,
+              style: theme.textTheme.headlineSmall,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: Icon(Icons.close)
+          ),
+        ],
+      ),
+      content: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: 400),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildItem(
+                context,
+                icon: Icons.flag,
+                label: '活動目的',
+                value: event.goal,
+              ),
+              _buildItem(
+                context,
+                icon: Icons.place,
+                label: '活動地點',
+                value: '餐廳: ${event.restoName}\n地址: ${event.address}',
+                onTap: () => _launchGoogleMap(event.restoName, event.address),
+              ),
+              _buildItem(
+                context,
+                icon: Icons.access_time_filled,
+                label: '活動時間',
+                value: '${event.formattedDate} ${event.formattedTime}',
+              ),
+              _buildItem(
+                context,
+                icon: Icons.man_rounded,
+                label: '人數限制',
+                value: event.numberOfPeople.toString(),
+              ),
+              _buildItem(
+                context,
+                icon: Icons.description,
+                label: '活動細節',
+                value: event.description,
+              ),
+              _buildItem(
+                context,
+                icon: Icons.people,
+                label: '參加人員',
+                value: event.participantNames,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItem(BuildContext context,
+      {required IconData icon,
+      required String label,
+      required dynamic value,
+      VoidCallback? onTap,
+  }) {
+    final theme = Theme.of(context);
+
+    final displayText = value is List<String>
+    ? value.asMap().entries.map((e) => '${e.key + 1}. ${e.value}').join('\n')
+    : value.toString();
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 24, color: theme.colorScheme.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$label:',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    displayText,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -116,3 +116,10 @@ class RemoveSharedUserByEmailResponse {
   bool success;
   String message;
 }
+
+class EventResponse {
+  EventResponse({required this.message, required this.success});
+
+  bool success;
+  String message;
+}

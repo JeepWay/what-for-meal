@@ -817,5 +817,238 @@ class FirebaseService {
     }
     return response;
   }
+
+  /// 以食會友：創建活動功能
+  static Future<EventResponse> addNewEvent(Event e) async {
+    var response = EventResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法創建活動';
+      return response;
+    }
+
+    try {
+        
+        final userName = await FirebaseService.getUserName();
+        
+        // 把餐廳依照地址轉成經緯度和 geoHash, 但結果不是很準 QQ
+        final geoInfo = await convertAddressToGeohash(e.address);
+        final data = {
+          ...e.toMap(), // 把傳入的 evnet 資訊展開成 dict, 和欄位包在一起 add
+          EventFields.geoHash:    geoInfo['geohash'],
+          EventFields.location:   GeoPoint(geoInfo['latitude'], geoInfo['longitude']),
+          EventFields.participants: [user.uid],
+          EventFields.participantNames: [userName],
+        };
+        await FirebaseFirestore.instance
+        .collection(CollectionNames.events)
+        .add(data);
+        
+      logger.i('${user.displayName} 成功創建活動 ${e.title}');
+      response.success = true;
+      response.message = '成功創建活動: ${e.title}';
+    } on FirebaseException catch (e) {
+      logger.w('創建活動錯誤\nFirestore error: $e');
+      response.message = '無法創建活動';
+    }
+    catch (e) {
+      logger.w('創建活動錯誤\nUnknown error: $e');
+      response.message = '未知錯誤: $e';
+    }
+    return response;
+  }
+
+  /// 以食會友：使用者參加活動
+  static Future<EventResponse> joinEvent({
+    required String eventId,
+  }) async {
+    var response = EventResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法參加活動';
+      return response;
+    }
+
+    try {
+        final userName = await FirebaseService.getUserName();
+
+        final docSnap = await FirebaseFirestore.instance
+          .collection(CollectionNames.events)
+          .doc(eventId)
+          .get();
+
+        final data = docSnap.data();
+        final participants = (data?[EventFields.participants] as List?) ?? [];
+        final limit = data?[EventFields.numberOfPeople] as int?;
+
+        // 如果使用者已參加該活動
+        if(participants.contains(user.uid)){
+          response.message = '您已經參加此活動, 勿重複參加';
+        }
+        // 如果目前活動參加人數 == 限制人數 （額滿）
+        else if(limit != null && participants.length >= limit){
+          response.message = '活動人數已滿, 無法參加';
+        }
+        else {
+          await FirebaseFirestore.instance
+          .collection(CollectionNames.events)
+          .doc(eventId)
+          .update({
+            EventFields.participants: FieldValue.arrayUnion([user.uid]),
+            EventFields.participantNames: FieldValue.arrayUnion([userName]),
+          });
+          response.message = '成功參加活動';
+        }
+
+      logger.i('${user.displayName} 已成功參加活動 $eventId');
+      response.success = true;
+    } on FirebaseException catch (e) {
+      logger.w('參加活動錯誤\nFirestore error: $e');
+      response.message = '無法參加活動';
+    }
+    catch (e) {
+      logger.w('參加活動錯誤\nUnknown error: $e');
+      response.message = '未知錯誤: $e';
+    }
+    return response;
+  }
+
+  /// 以食會友：參與者取消參加
+  static Future<EventResponse> cancelEvent({
+    required String eventId,
+  }) async {
+    var response = EventResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法取消活動';
+      return response;
+    }
+
+    try {
+        final userName = await FirebaseService.getUserName();
+
+        await FirebaseFirestore.instance
+          .collection(CollectionNames.events)
+          .doc(eventId)
+          .update({
+            EventFields.participants: FieldValue.arrayRemove([user.uid]),
+            EventFields.participantNames: FieldValue.arrayRemove([userName]),
+          });
+
+      logger.i('${user.displayName} 已取消參加活動 $eventId');
+      response.success = true;
+      response.message = '已取消參加活動';
+    } on FirebaseException catch (e) {
+      logger.w('取消參加活動錯誤\nFirestore error: $e');
+      response.message = '無法取消參加活動';
+    }
+    catch (e) {
+      logger.w('取消參加活動錯誤\nUnknown error: $e');
+      response.message = '未知錯誤: $e';
+    }
+    return response;
+  }
+
+  /// 以食會友：創建者可刪除活動
+  static Future<EventResponse> deleteEvent({
+    required String eventId,
+  }) async {
+    var response = EventResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法刪除活動';
+      return response;
+    }
+
+    try {
+        await FirebaseFirestore.instance
+          .collection(CollectionNames.events)
+          .doc(eventId)
+          .delete();
+
+      logger.i('已刪除活動 $eventId');
+      response.success = true;
+      response.message = '已刪除活動';
+    } on FirebaseException catch (e) {
+      logger.w('刪除活動錯誤\nFirestore error: $e');
+      response.message = '無法刪除活動';
+    }
+    catch (e) {
+      logger.w('刪除活動錯誤\nUnknown error: $e');
+      response.message = '未知錯誤: $e';
+    }
+    return response;
+  }
+
+  /// 以食會友：創建者可編輯活動內容
+  static Future<EventResponse> editEvent(Event e,) async {
+    var response = EventResponse(success: false, message: '');
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      response.message = '尚未登入，無法編輯活動';
+      return response;
+    }
+
+    try {
+        final geoInfo = await convertAddressToGeohash(e.address);
+        final data = {
+          ...e.toMap(), // 把傳入的 evnet 資訊展開成 dict, 和欄位包在一起 add
+          EventFields.geoHash:    geoInfo['geohash'],
+          EventFields.location:   GeoPoint(geoInfo['latitude'], geoInfo['longitude']),
+        };
+
+        await FirebaseFirestore.instance
+          .collection(CollectionNames.events)
+          .doc(e.id)
+          .update(data);
+
+      logger.i('${user.displayName} 已更新活動 ${e.title}');
+      response.success = true;
+      response.message = '已更新活動 ${e.title}';
+    } on FirebaseException catch (e) {
+      logger.w('更新活動錯誤\nFirestore error: $e');
+      response.message = '無法更新活動';
+    }
+    catch (e) {
+      logger.w('更新活動錯誤\nUnknown error: $e');
+      response.message = '未知錯誤: $e';
+    }
+    return response;
+  }
+
+  /// 用 email 的 user.displayName 會是 null
+  static Future<String?> getUserName() async {
+    final user = FirebaseAuth.instance.currentUser;
+    String? userName;
+
+    if (user == null) {
+      return null;
+    }
+
+    try {
+      final userDoc = await FirebaseFirestore.instance
+                      .collection(CollectionNames.users)
+                      .doc(user.uid)
+                      .get();
+
+      final userData = userDoc.data();
+      userName = userData![UserFileds.userName];
+      
+    } on FirebaseException catch (e) {
+      logger.w('更新活動錯誤\nFirestore error: $e');
+    }
+    catch (e) {
+      logger.w('更新活動錯誤\nUnknown error: $e');
+    }
+
+    return userName;
+  }
+
 }
 
+  
