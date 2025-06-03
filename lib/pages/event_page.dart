@@ -229,7 +229,7 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver{
                             },
                             onCancel: null,
                             onEdit: null,
-                            onDismissed: null,
+                            onDelete: null, // ✅ 加上這行就不會報錯
                           );
                         }).toList(),
                       );

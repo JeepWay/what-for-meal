@@ -1036,7 +1036,6 @@ class FirebaseService {
 
     return userName;
   }
-
 }
 
   
