@@ -27,7 +27,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('已參加的活動'),
+        title: const Text('已參加的活動'),
         centerTitle: true,
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
@@ -45,7 +45,10 @@ class _MyEventsPageState extends State<MyEventsPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text(
-                    '1. 點擊活動可查看詳細資訊\n2. 點擊 -1 可取消參加活動(創建者只可刪除活動)\n3. 點擊鉛筆可編輯活動\n4. 左滑可刪除活動',
+                    '1. 點擊活動可查看詳細資訊\n'
+                    '2. 參與者點擊 -1 可取消參加活動\n'
+                    '3. 創建者可點擊垃圾桶刪除活動\n'
+                    '4. 創建者可長按編輯活動\n',
                     textAlign: TextAlign.left,
                   ),
                   duration: Duration(seconds: 6),
@@ -76,11 +79,9 @@ class _MyEventsPageState extends State<MyEventsPage> {
                       restoName: doc[EventFields.restoName] as String? ?? '',
                       address: doc[EventFields.address] as String? ?? '',
                       participants: List<String>.from(doc[EventFields.participants] ?? <String>[]),
-                      participantNames:
-                          List<String>.from(doc[EventFields.participantNames] ?? <String>[]),
+                      participantNames: List<String>.from(doc[EventFields.participantNames] ?? <String>[]),
                     );
-              }).toList()),
-
+                  }).toList()),
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.active) {
               return const Center(child: CircularProgressIndicator());
@@ -99,6 +100,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
               itemBuilder: (context, index) {
                 final event = events[index];
                 final isCreator = event.participants.first == widget.userId;
+
                 return EventCard(
                   isCreator: isCreator,
                   event: event,
@@ -119,33 +121,46 @@ class _MyEventsPageState extends State<MyEventsPage> {
                             content: res.success
                                 ? Text('已取消參加活動 ${event.title}', textAlign: TextAlign.center)
                                 : Text(res.message, textAlign: TextAlign.center),
-                            duration: Duration(seconds: 3),
+                            duration: const Duration(seconds: 3),
                             showCloseIcon: true,
                           ),
                         );
                       }
                     }
                   },
-                  onEdit: () async {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => EventFormPage(event: event)),
-                    );
-                  },
-                  onDismissed: () async {
-                    final res = await FirebaseService.deleteEvent(eventId: event.id);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: res.success
-                              ? Text('已刪除活動 ${event.title}', textAlign: TextAlign.center)
-                              : Text(res.message, textAlign: TextAlign.center),
-                          duration: Duration(seconds: 3),
-                          showCloseIcon: true,
-                        ),
-                      );
-                    }
-                  },
+                  onEdit: isCreator
+                      ? () async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => EventFormPage(event: event)),
+                          );
+                        }
+                      : null,
+                  onDelete: isCreator
+                      ? () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => DoubleCheckDismissDialog(
+                              titleText: '確認刪除',
+                              displayText: '確定要刪除活動「${event.title}」嗎？此操作無法復原。',
+                            ),
+                          );
+                          if (confirm == true) {
+                            final res = await FirebaseService.deleteEvent(eventId: event.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: res.success
+                                      ? Text('已刪除活動 ${event.title}', textAlign: TextAlign.center)
+                                      : Text(res.message, textAlign: TextAlign.center),
+                                  duration: const Duration(seconds: 3),
+                                  showCloseIcon: true,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      : null,
                 );
               },
             );
