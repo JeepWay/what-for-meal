@@ -369,7 +369,6 @@ class EventCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 標題與倒數
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -391,14 +390,11 @@ class EventCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
 
-              // 活動詳細資料
               Text('時間: ${event.formattedDate} ${event.formattedTime}'),
               Text('地址: ${event.address}'),
               Text('人數：${event.participantNames.length} / ${event.numberOfPeople}'),
               Text('創建者：$creatorName'),
               const SizedBox(height: 12),
-
-              // 一行不換的按鈕列
               Row(children: actionButtons),
             ],
           ),

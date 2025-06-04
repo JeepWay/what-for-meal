@@ -1009,7 +1009,6 @@ class FirebaseService {
     return response;
   }
 
-  /// 用 email 的 user.displayName 會是 null
   static Future<String?> getUserName() async {
     final user = FirebaseAuth.instance.currentUser;
     String? userName;
@@ -1059,8 +1058,6 @@ class FirebaseService {
         .snapshots()
         .map((snap) => snap.docs.map((doc) => doc['eventId'] as String).toList());
   }
-
-
 }
 
   

@@ -60,6 +60,7 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       _currentPosition();
     }
@@ -121,7 +122,7 @@ class _EventPageState extends State<EventPage> with WidgetsBindingObserver {
               },
             ),
             const SizedBox(width: 32),
-            const Text('以食會友'), // 這是你的標題
+            const Text('以食會友'), 
           ],
         ),
         actions: [
