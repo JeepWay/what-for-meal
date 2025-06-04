@@ -1,4 +1,5 @@
 # what_for_meal
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/JeepWay/what-for-meal)
 
 A new Flutter project.
 
