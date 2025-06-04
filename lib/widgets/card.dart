@@ -228,15 +228,18 @@ class RestaurantDismissibleCard extends StatelessWidget {
     }
   }
 }
+
 class EventCard extends StatelessWidget {
   const EventCard({
+    super.key,
     required this.isCreator,
     required this.event,
     required this.onEdit,
     required this.onCancel,
     required this.onPlusOne,
     required this.onDelete,
-    super.key,
+    required this.favoriteEventIds,
+    required this.onToggleFavorite,
   });
 
   final Event event;
@@ -245,65 +248,158 @@ class EventCard extends StatelessWidget {
   final Function? onCancel;
   final Function? onPlusOne;
   final Function? onDelete;
+  final List<String> favoriteEventIds;
+  final Function(bool isCurrentlyFav)? onToggleFavorite;
+
+  bool get isFavorited => favoriteEventIds.contains(event.id);
+
+  String _getCountdownText(DateTime eventTime) {
+    final now = DateTime.now();
+    final diff = eventTime.difference(now);
+
+    if (diff.isNegative) return '已開始';
+    if (diff.inDays > 0) return '剩 ${diff.inDays} 天';
+    if (diff.inHours > 0) return '剩 ${diff.inHours} 小時';
+    if (diff.inMinutes > 0) return '剩 ${diff.inMinutes} 分';
+    return '即將開始';
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final countdown = _getCountdownText(event.dateTime.toDate());
+    final creatorName = event.participantNames.isNotEmpty
+        ? event.participantNames.first
+        : '未知';
 
-    return Card(
-        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        clipBehavior: Clip.hardEdge,
-        child: ListTile(
-          leading: const Icon(Icons.event_available_rounded),
-          title: Text(event.title),
-          titleTextStyle: theme.textTheme.titleLarge,
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('時間: ${event.formattedDate} ${event.formattedTime}'),
-              Text('地址: ${event.address}'),
-              const SizedBox(height: 6),
-            ],
+    ButtonStyle filledStyle(Color bgColor) => FilledButton.styleFrom(
+      backgroundColor: bgColor,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    );
+
+    List<Widget> actionButtons = [
+      Expanded(
+        child: FilledButton.icon(
+          icon: SizedBox(
+            width: 20,
+            child: Icon(
+              isFavorited ? Icons.favorite : Icons.favorite_border,
+              color: isFavorited ? Colors.red : theme.colorScheme.onPrimary,
+            ),
           ),
-          subtitleTextStyle: theme.textTheme.titleSmall,
-          trailing: Wrap(
-            spacing: 4,
-            children: [
-              if (onPlusOne != null)
-                IconButton(
-                  icon: const Icon(Icons.exposure_plus_1),
-                  tooltip: '參加活動',
-                  onPressed: () => onPlusOne!(),
-                ),
-              if (!isCreator && onCancel != null)
-                IconButton(
-                  icon: const Icon(Icons.exposure_minus_1),
-                  tooltip: '取消參加',
-                  onPressed: () => onCancel!(),
-                ),
-              if (isCreator && onDelete != null)
-                IconButton(
-                  color: theme.colorScheme.error,
-                  icon: const Icon(Icons.delete),
-                  tooltip: '刪除活動',
-                  onPressed: () => onDelete!(),
-                ),
-            ],
+          label: Text(
+            isFavorited ? '取消收藏' : '收藏',
+            style: TextStyle(color: theme.colorScheme.onPrimary),
           ),
-          onTap: () {
-            showDialog<Event>(
-              context: context,
-              builder: (_) => EventDetailDialog(event: event),
-            );
-          },
-          onLongPress: () {
-            if (isCreator && onEdit != null) {
-              onEdit!();
-            }
-          },
+          style: filledStyle(theme.colorScheme.primary),
+          onPressed: () => onToggleFavorite?.call(isFavorited),
+        ),
+      ),
+    ];
+
+    if (onPlusOne != null) {
+      actionButtons.add(const SizedBox(width: 8));
+      actionButtons.add(
+        Expanded(
+          child: FilledButton.icon(
+            icon: const SizedBox(
+              width: 20,
+              child: Icon(Icons.exposure_plus_1, color: Colors.white),
+            ),
+            label: Text('參加', style: TextStyle(color: theme.colorScheme.onPrimary)),
+            style: filledStyle(theme.colorScheme.primary),
+            onPressed: () => onPlusOne!(),
+          ),
         ),
       );
+    }
+
+    if (!isCreator && onCancel != null) {
+      actionButtons.add(const SizedBox(width: 8));
+      actionButtons.add(
+        Expanded(
+          child: FilledButton.icon(
+            icon: const SizedBox(
+              width: 20,
+              child: Icon(Icons.exposure_minus_1, color: Colors.white),
+            ),
+            label: Text('取消參加', style: TextStyle(color: theme.colorScheme.onPrimary)),
+            style: filledStyle(theme.colorScheme.primary),
+            onPressed: () => onCancel!(),
+          ),
+        ),
+      );
+    }
+
+    if (isCreator && onDelete != null) {
+      actionButtons.add(const SizedBox(width: 8));
+      actionButtons.add(
+        Expanded(
+          child: FilledButton.icon(
+            icon: SizedBox(
+              width: 20,
+              child: Icon(Icons.delete, color: theme.colorScheme.onPrimary),
+            ),
+            label: Text('刪除', style: TextStyle(color: theme.colorScheme.onPrimary)),
+            style: filledStyle(theme.colorScheme.error),
+            onPressed: () => onDelete!(),
+          ),
+        ),
+      );
+    }
+
+    return InkWell(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (_) => EventDetailDialog(event: event),
+        );
+      },
+      onLongPress: () {
+        if (isCreator && onEdit != null) {
+          onEdit!();
+        }
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        clipBehavior: Clip.hardEdge,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      event.title,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleLarge,
+                    ),
+                  ),
+                  Text(
+                    countdown,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+
+              Text('時間: ${event.formattedDate} ${event.formattedTime}'),
+              Text('地址: ${event.address}'),
+              Text('人數：${event.participantNames.length} / ${event.numberOfPeople}'),
+              Text('創建者：$creatorName'),
+              const SizedBox(height: 12),
+              Row(children: actionButtons),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
-
-

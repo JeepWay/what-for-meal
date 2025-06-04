@@ -1021,7 +1021,6 @@ class FirebaseService {
     return response;
   }
 
-  /// 用 email 的 user.displayName 會是 null
   static Future<String?> getUserName() async {
     final user = FirebaseAuth.instance.currentUser;
     String? userName;
@@ -1049,6 +1048,28 @@ class FirebaseService {
     return userName;
   }
 
+  static final _favoritesRef = FirebaseFirestore.instance.collection('favorites_events');
+
+  static Future<void> addFavoriteEvent({required String userId, required String eventId}) async {
+    final docId = '${userId}_$eventId';
+    await _favoritesRef.doc(docId).set({
+      'userId': userId,
+      'eventId': eventId,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
+  static Future<void> removeFavoriteEvent({required String userId, required String eventId}) async {
+    final docId = '${userId}_$eventId';
+    await _favoritesRef.doc(docId).delete();
+  }
+
+  static Stream<List<String>> favoriteEventIdsStream(String userId) {
+    return _favoritesRef
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snap) => snap.docs.map((doc) => doc['eventId'] as String).toList());
+  }
 }
 
   

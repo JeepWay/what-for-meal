@@ -1578,13 +1578,30 @@ class EventDetailDialog extends StatelessWidget {
   final Event event;
 
   void _launchGoogleMap(String name, String address) {
-    final url = 'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent('$name $address')}';
+    final url =
+        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent('$name $address')}';
     launchUrl(Uri.parse(url));
+  }
+
+  String _getCountdownText(DateTime eventTime) {
+    final now = DateTime.now();
+    final diff = eventTime.difference(now);
+
+    if (diff.isNegative) return '已開始';
+    if (diff.inDays > 0) return '剩 ${diff.inDays} 天';
+    if (diff.inHours > 0) return '剩 ${diff.inHours} 小時';
+    if (diff.inMinutes > 0) return '剩 ${diff.inMinutes} 分';
+    return '即將開始';
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final countdownText = _getCountdownText(event.dateTime.toDate());
+    final creator = event.participantNames.isNotEmpty
+        ? event.participantNames.first
+        : '未知';
+
     return AlertDialog(
       backgroundColor: theme.colorScheme.surface,
       title: Row(
@@ -1600,12 +1617,12 @@ class EventDetailDialog extends StatelessWidget {
           ),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(Icons.close)
+            icon: const Icon(Icons.close),
           ),
         ],
       ),
       content: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: 400),
+        constraints: const BoxConstraints(maxHeight: 400),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1616,12 +1633,13 @@ class EventDetailDialog extends StatelessWidget {
                 label: '活動目的',
                 value: event.goal,
               ),
-              _buildItem(
+              _buildItemWithButton(
                 context,
                 icon: Icons.place,
                 label: '活動地點',
                 value: '餐廳: ${event.restoName}\n地址: ${event.address}',
-                onTap: () => _launchGoogleMap(event.restoName, event.address),
+                buttonLabel: '查看地圖',
+                onPressed: () => _launchGoogleMap(event.restoName, event.address),
               ),
               _buildItem(
                 context,
@@ -1631,9 +1649,21 @@ class EventDetailDialog extends StatelessWidget {
               ),
               _buildItem(
                 context,
+                icon: Icons.timer,
+                label: '倒數時間',
+                value: countdownText,
+              ),
+              _buildItem(
+                context,
+                icon: Icons.person_pin,
+                label: '創建者',
+                value: creator,
+              ),
+              _buildItem(
+                context,
                 icon: Icons.man_rounded,
                 label: '人數限制',
-                value: event.numberOfPeople.toString(),
+                value: '${event.participantNames.length} / ${event.numberOfPeople}',
               ),
               _buildItem(
                 context,
@@ -1654,17 +1684,18 @@ class EventDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildItem(BuildContext context,
-      {required IconData icon,
-      required String label,
-      required dynamic value,
-      VoidCallback? onTap,
+  Widget _buildItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required dynamic value,
+    VoidCallback? onTap,
   }) {
     final theme = Theme.of(context);
 
     final displayText = value is List<String>
-    ? value.asMap().entries.map((e) => '${e.key + 1}. ${e.value}').join('\n')
-    : value.toString();
+        ? value.asMap().entries.map((e) => '${e.key + 1}. ${e.value}').join('\n')
+        : value.toString();
 
     return InkWell(
       onTap: onTap,
@@ -1693,6 +1724,58 @@ class EventDetailDialog extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildItemWithButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+    required String buttonLabel,
+    required VoidCallback onPressed,
+  }) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 24, color: theme.colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$label:',
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 4),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ElevatedButton(
+                    onPressed: onPressed,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text(buttonLabel),
+                  )
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
