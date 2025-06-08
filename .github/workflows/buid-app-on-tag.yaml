@@ -1,0 +1,55 @@
+name: Build flutter release apk
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: 17
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2'
+          channel: 'stable'
+
+      - name: Install project dependencies
+        run: flutter pub get
+
+      - name: Decode keystore
+        run: echo "${{ secrets.ANDROID_KEY_STORE }}" | base64 -di > android/app/whar-for-meal-release-key.jks
+        env:
+          ANDROID_KEY_STORE_BASE64: ${{ secrets.ANDROID_KEY_STORE }}
+
+      - name: Decode google service
+        run: echo "${{ secrets.GOOGLE_SERVICE }}" | base64 -di > android/app/google-services.json
+        env:
+          GOOGLE_SERVICES_BASE64: ${{ secrets.GOOGLE_SERVICE }}
+
+      - name: Create key.properties
+        run: |
+          echo "RELEASE_FILE_PATH=whar-for-meal-release-key.jks" > android/key.properties
+          echo "RELEASE_KEY_ALIAS=${{ secrets.ALIAS }}" >> android/key.properties
+          echo "RELEASE_STORE_PASSWORD=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
+          echo "RELEASE_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
